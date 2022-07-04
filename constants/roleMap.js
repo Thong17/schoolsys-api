@@ -65,6 +65,50 @@ exports.privilege = {
             action: 'delete'
         }
     },
+    student: {
+        list: {
+            route: 'user',
+            action: 'list'
+        },
+        detail: {
+            route: 'user',
+            action: 'detail'
+        },
+        create: {
+            route: 'user',
+            action: 'create'
+        },
+        update: {
+            route: 'user',
+            action: 'update'
+        },
+        delete: {
+            route: 'user',
+            action: 'delete'
+        }
+    },
+    teacher: {
+        list: {
+            route: 'user',
+            action: 'list'
+        },
+        detail: {
+            route: 'user',
+            action: 'detail'
+        },
+        create: {
+            route: 'user',
+            action: 'create'
+        },
+        update: {
+            route: 'user',
+            action: 'update'
+        },
+        delete: {
+            route: 'user',
+            action: 'delete'
+        }
+    },
 }
 
 let role
