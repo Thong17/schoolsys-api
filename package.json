@@ -1,11 +1,13 @@
 {
-  "name": "softdev-v2",
+  "name": "school-system",
   "version": "1.0.0",
   "description": "",
   "main": "app.js",
   "scripts": {
     "start": "node start app.js",
-    "dev": "nodemon app.js"
+    "dev": "nodemon app.js",
+    "dockerBuild": "docker build -t schoolsystem/schoolsys-api .",
+    "dockerPush": "docker push schoolsystem/schoolsys-api"
   },
   "repository": {
     "type": "git",
