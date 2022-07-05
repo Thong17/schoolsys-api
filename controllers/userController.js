@@ -115,12 +115,12 @@ exports.batch = async (req, res) => {
 
 exports.profile = (req, res) => {
     const user = {
-        id: req.user.id,
-        username: req.user.username,
-        privilege: req.user.role.privilege,
-        photo: req.user.profile?.photo,
-        theme: req.user.config?.theme,
-        language: req.user.config?.language
+        id: req.user?.id,
+        username: req.user?.username,
+        privilege: req.user?.role.privilege,
+        photo: req.user?.profile?.photo,
+        theme: req.user?.config?.theme,
+        language: req.user?.config?.language
     }
     return response.success(200, { user }, res)
 }

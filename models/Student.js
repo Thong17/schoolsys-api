@@ -30,6 +30,10 @@ const schema = mongoose.Schema(
         },
         email: {
             type: String,
+            required: [true, 'Email is required!'],
+            index: {
+                unique: true
+            }
         },
         profile: {
             type: mongoose.Schema.ObjectId,
@@ -40,6 +44,10 @@ const schema = mongoose.Schema(
             ref: 'Score'
         }],
         createdBy: {
+            type: mongoose.Schema.ObjectId,
+            ref: 'User'
+        },
+        authenticate: {
             type: mongoose.Schema.ObjectId,
             ref: 'User'
         },
@@ -65,6 +73,16 @@ schema.pre('save', async function (next) {
 })
 
 schema.post('save', async function () {
+    if (!this.authenticate) {
+        const password = await encryptPassword(`${this.lastName}.${this.firstName}@123`)
+        const user = await User.create({ 
+            username: `${this.lastName}.${this.firstName}`,
+            password,
+            email: this.email,
+            role: 'a7668e2a9ed48842855643cf'
+        })
+        await this.model('Student').findOneAndUpdate({ _id: this.id }, { authenticate: user.id })
+    }
     await Image.findOneAndUpdate({ _id: this.profile }, { isActive: true })
 })
 
