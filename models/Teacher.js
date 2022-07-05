@@ -1,7 +1,6 @@
 const mongoose = require('mongoose')
 const Image = require('./Image')
 const User = require('./User')
-const { encryptPassword } = require('../helpers/utils')
 
 const schema = mongoose.Schema(
     {
@@ -76,10 +75,10 @@ schema.pre('save', async function (next) {
 
 schema.post('save', async function () {
     if (!this.authenticate) {
-        const password = await encryptPassword(`${this.lastName}.${this.firstName}@123`)
+        const username = `${this.lastName}.${this.firstName}`.toLowerCase()
         const user = await User.create({ 
-            username: `${this.lastName}.${this.firstName}`,
-            password,
+            username,
+            password: `${username}@123`,
             email: this.email,
             role: '88a28069b8f93e95a08367b8'
         })
