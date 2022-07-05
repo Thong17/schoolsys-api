@@ -9,16 +9,8 @@
     "dockerBuild": "docker build -t schoolsystem/schoolsys-api .",
     "dockerPush": "docker push schoolsystem/schoolsys-api"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Thong17/SoftDev-V2.git"
-  },
   "author": "",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/Thong17/SoftDev-V2/issues"
-  },
-  "homepage": "https://github.com/Thong17/SoftDev-V2#readme",
   "dependencies": {
     "bcrypt": "^5.0.1",
     "cors": "^2.8.5",
