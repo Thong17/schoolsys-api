@@ -23,10 +23,13 @@ exports.create = async (req, res) => {
     const body = req.body
     const { error } = createTeacherValidation.validate(body, { abortEarly: false })
     if (error) return response.failure(422, extractJoiErrors(error), res)
-    const countTeacher = await Teacher.count()
-    const currentDate = new Date()
-    const ref = currentDate.getFullYear() + countTeacher
 
+    const currentDate = new Date()
+    const startYear = new Date(currentDate.getUTCFullYear(), 0, 1)
+    const endYear = new Date(currentDate.getUTCFullYear() + 1, 0, 1)
+
+    const countTeacher = await Teacher.count({ createdAt: { $gte: startYear, $lt: endYear }})
+    const ref = `T${body?.gender[0].toUpperCase()}` + currentDate.getFullYear() + countTeacher.toString().padStart(5, '0')
     try {
         Teacher.create({...body, ref, createdBy: req.user.id}, (err, teacher) => {
             if (err) {

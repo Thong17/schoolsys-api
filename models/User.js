@@ -15,10 +15,6 @@ const schema = mongoose.Schema(
         },
         email: {
             type: String,
-            required: [true, 'Email is required!'],
-            index: {
-                unique: true
-            }
         },
         password: {
             type: String,

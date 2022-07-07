@@ -20,21 +20,20 @@ const schema = mongoose.Schema(
             type: String,
             required: [true, 'Gender is required!']
         },
-        birthDate: {
+        dateOfBirth: {
             type: Date
+        },
+        placeOfBirth: {
+            type: String,
+        },
+        nationality: {
+            type: String,
         },
         address: {
             type: String,
         },
         contact: {
             type: String,
-        },
-        email: {
-            type: String,
-            required: [true, 'Email is required!'],
-            index: {
-                unique: true
-            }
         },
         profile: {
             type: mongoose.Schema.ObjectId,
@@ -75,10 +74,10 @@ schema.pre('save', async function (next) {
 
 schema.post('save', async function () {
     if (!this.authenticate) {
-        const username = `${this.lastName}.${this.firstName}`.toLowerCase()
+        const username = this.ref
         const user = await User.create({ 
             username,
-            password: `${username}@123`,
+            password: `${username}@default`,
             email: this.email,
             role: 'a7668e2a9ed48842855643cf'
         })

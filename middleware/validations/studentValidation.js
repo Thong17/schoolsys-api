@@ -10,16 +10,19 @@ const createStudentValidation = Joi.object({
     gender: Joi.string()
         .required(),
 
-    birthDate: Joi.string()
+    dateOfBirth: Joi.string()
         .required(),
+
+    placeOfBirth: Joi.string()
+        .allow(''),
+
+    nationality: Joi.string()
+        .allow(''),
 
     address: Joi.string()
         .allow(''),
 
     contact: Joi.string()
-        .allow(''),
-
-    email: Joi.string()
         .allow(''),
 
     profile: Joi.any()

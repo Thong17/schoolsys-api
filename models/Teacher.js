@@ -75,10 +75,10 @@ schema.pre('save', async function (next) {
 
 schema.post('save', async function () {
     if (!this.authenticate) {
-        const username = `${this.lastName}.${this.firstName}`.toLowerCase()
+        const username = this.ref
         const user = await User.create({ 
             username,
-            password: `${username}@123`,
+            password: `${username}@default`,
             email: this.email,
             role: '88a28069b8f93e95a08367b8'
         })

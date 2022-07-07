@@ -23,10 +23,13 @@ exports.create = async (req, res) => {
     const body = req.body
     const { error } = createStudentValidation.validate(body, { abortEarly: false })
     if (error) return response.failure(422, extractJoiErrors(error), res)
-    const countStudent = await Student.count()
+    
     const currentDate = new Date()
-    const ref = currentDate.getFullYear() + countStudent
+    const startYear = new Date(currentDate.getUTCFullYear(), 0, 1)
+    const endYear = new Date(currentDate.getUTCFullYear() + 1, 0, 1)
 
+    const countStudent = await Student.count({ createdAt: { $gte: startYear, $lt: endYear }})
+    const ref = `S${body?.gender[0].toUpperCase()}` + currentDate.getFullYear() + countStudent.toString().padStart(5, '0')
     try {
         Student.create({...body, ref, createdBy: req.user.id}, (err, student) => {
             if (err) {
