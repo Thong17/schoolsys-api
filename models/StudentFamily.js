@@ -11,7 +11,7 @@ const schema = mongoose.Schema(
         numberOfSibling: {
             type: Number,
         },
-        numberOfSibling: {
+        siblingAttendSchool: {
             type: Number,
         },
         languages: {

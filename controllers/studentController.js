@@ -3,7 +3,10 @@ const Config = require('../models/Config')
 const Student = require('../models/Student')
 const { failureMsg } = require('../constants/responseMsg')
 const { extractJoiErrors, readExcel, encryptPassword } = require('../helpers/utils')
-const { createStudentValidation } = require('../middleware/validations/studentValidation')
+const { createStudentValidation, updateStudentAcademyValidation, updateStudentFamilyValidation, updateStudentHealthValidation } = require('../middleware/validations/studentValidation')
+const StudentFamily = require('../models/StudentFamily')
+const StudentAcademy = require('../models/StudentAcademy')
+const StudentHealth = require('../models/StudentHealth')
 
 exports.index = (req, res) => {
     Student.find({ isDisabled: false }, (err, students) => {
@@ -16,7 +19,7 @@ exports.detail = (req, res) => {
     Student.findById(req.params.id, (err, student) => {
         if (err) return response.failure(422, { msg: failureMsg.trouble }, res, err)
         return response.success(200, { data: student }, res)
-    }).populate('profile')
+    }).populate('profile').populate('family').populate('health').populate('academy')
 }
 
 exports.create = async (req, res) => {
@@ -116,5 +119,71 @@ exports.batch = async (req, res) => {
             })
     } catch (err) {
         return response.failure(422, { msg: failureMsg.trouble }, res)
+    }
+}
+
+exports.updateFamily = (req, res) => {
+    const body = req.body
+    const { error } = updateStudentFamilyValidation.validate(body, { abortEarly: false })
+    if (error) return response.failure(422, extractJoiErrors(error), res)
+
+    try {
+        StudentFamily.findByIdAndUpdate(req.params.id, body, (err, student) => {
+            if (err) {
+                switch (err.code) {
+                    default:
+                        return response.failure(422, { msg: err.message }, res, err)
+                }
+            }
+
+            if (!student) return response.failure(422, { msg: 'No student updated!' }, res, err)
+            response.success(200, { msg: 'Student has updated successfully', data: student }, res)
+        })
+    } catch (err) {
+        return response.failure(422, { msg: failureMsg.trouble }, res, err)
+    }
+}
+
+exports.updateAcademy = (req, res) => {
+    const body = req.body
+    const { error } = updateStudentAcademyValidation.validate(body, { abortEarly: false })
+    if (error) return response.failure(422, extractJoiErrors(error), res)
+
+    try {
+        StudentAcademy.findByIdAndUpdate(req.params.id, body, (err, student) => {
+            if (err) {
+                switch (err.code) {
+                    default:
+                        return response.failure(422, { msg: err.message }, res, err)
+                }
+            }
+
+            if (!student) return response.failure(422, { msg: 'No student updated!' }, res, err)
+            response.success(200, { msg: 'Student has updated successfully', data: student }, res)
+        })
+    } catch (err) {
+        return response.failure(422, { msg: failureMsg.trouble }, res, err)
+    }
+}
+
+exports.updateHealth = (req, res) => {
+    const body = req.body
+    const { error } = updateStudentHealthValidation.validate(body, { abortEarly: false })
+    if (error) return response.failure(422, extractJoiErrors(error), res)
+
+    try {
+        StudentHealth.findByIdAndUpdate(req.params.id, body, (err, student) => {
+            if (err) {
+                switch (err.code) {
+                    default:
+                        return response.failure(422, { msg: err.message }, res, err)
+                }
+            }
+
+            if (!student) return response.failure(422, { msg: 'No student updated!' }, res, err)
+            response.success(200, { msg: 'Student has updated successfully', data: student }, res)
+        })
+    } catch (err) {
+        return response.failure(422, { msg: failureMsg.trouble }, res, err)
     }
 }

@@ -10,7 +10,7 @@ const createStudentValidation = Joi.object({
     gender: Joi.string()
         .required(),
 
-    dateOfBirth: Joi.string()
+    dateOfBirth: Joi.date()
         .required(),
 
     placeOfBirth: Joi.string()
@@ -28,4 +28,52 @@ const createStudentValidation = Joi.object({
     profile: Joi.any()
 })
 
-module.exports = { createStudentValidation }
+const updateStudentFamilyValidation = Joi.object({
+    guardian: Joi.string()
+        .allow(''),
+
+    contact: Joi.string()
+        .allow(''),
+
+    numberOfSibling: Joi.string()
+        .allow(''),
+
+    siblingAttendSchool: Joi.string()
+        .allow(''),
+
+    languages: Joi.string()
+        .allow(''),
+
+    student: Joi.string()
+        .required(),
+})
+
+const updateStudentAcademyValidation = Joi.object({
+    previousGrade: Joi.string()
+        .allow(''),
+
+    previousSchool: Joi.string()
+        .allow(''),
+
+    appliedGrade: Joi.string()
+        .allow(''),
+
+    student: Joi.string()
+        .required(),
+})
+
+const updateStudentHealthValidation = Joi.object({
+    previousTreatment: Joi.string()
+        .allow(''),
+
+    presentTreatment: Joi.string()
+        .allow(''),
+
+    allergies: Joi.string()
+        .allow(''),
+
+    student: Joi.string()
+        .required(),
+})
+
+module.exports = { createStudentValidation, updateStudentAcademyValidation, updateStudentFamilyValidation, updateStudentHealthValidation }
