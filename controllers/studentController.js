@@ -1,5 +1,4 @@
 const response = require('../helpers/response')
-const Config = require('../models/Config')
 const Student = require('../models/Student')
 const { failureMsg } = require('../constants/responseMsg')
 const { extractJoiErrors, readExcel, encryptPassword } = require('../helpers/utils')

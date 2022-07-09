@@ -1,7 +1,7 @@
 const multer = require('multer')
 const upload = multer()
 const router = require('express').Router()
-const { index, detail, create, disable, update, batch, _import, updateFamily, updateAcademy, updateHealth } = require('../../controllers/studentController')
+const { index, detail, create, disable, update, batch, _import } = require('../../controllers/gradeController')
 const security = require('../../middleware/security')
 const { privilege } = require('../../constants/roleMap')
 
@@ -31,18 +31,6 @@ router.post('/excel/import', upload.single('excel'), (req, res) => {
 
 router.post('/batch', (req, res) => {
     batch(req, res)
-})
-
-router.put('/family/:id', (req, res) => {
-    updateFamily(req, res)
-})
-
-router.put('/academy/:id', (req, res) => {
-    updateAcademy(req, res)
-})
-
-router.put('/health/:id', (req, res) => {
-    updateHealth(req, res)
 })
 
 module.exports = router
