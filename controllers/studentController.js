@@ -13,6 +13,8 @@ exports.index = (req, res) => {
         if (err) return response.failure(422, { msg: failureMsg.trouble }, res, err)
         return response.success(200, { data: students }, res)
     })
+        .populate({ path: 'profile', select: ['filename'] })
+        .populate({ path: 'academy', select: ['appliedGrade'] })
 }
 
 exports.detail = (req, res) => {
