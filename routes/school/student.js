@@ -1,7 +1,7 @@
 const multer = require('multer')
 const upload = multer()
 const router = require('express').Router()
-const { index, detail, create, disable, update, batch, _import, updateFamily, updateAcademy, updateHealth } = require('../../controllers/studentController')
+const { index, detail, create, disable, update, batch, _import, updateFamily, updateAcademy, updateHealth, selectAcademy } = require('../../controllers/studentController')
 const security = require('../../middleware/security')
 const { privilege } = require('../../constants/roleMap')
 
@@ -43,6 +43,10 @@ router.put('/academy/:id', (req, res) => {
 
 router.put('/health/:id', (req, res) => {
     updateHealth(req, res)
+})
+
+router.get('/academy/:classId', security.role(privilege.role.list), (req, res) => {
+    selectAcademy(req, res)
 })
 
 module.exports = router
