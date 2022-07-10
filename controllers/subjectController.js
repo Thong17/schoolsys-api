@@ -1,41 +1,41 @@
 const response = require('../helpers/response')
-const Grade = require('../models/Grade')
+const Subject = require('../models/Subject')
 const { failureMsg } = require('../constants/responseMsg')
 const { extractJoiErrors, readExcel } = require('../helpers/utils')
-const { gradeValidation } = require('../middleware/validations/gradeValidation')
+const { subjectValidation } = require('../middleware/validations/subjectValidation')
 
 exports.index = (req, res) => {
-    Grade.find({ isDisabled: false }, (err, grades) => {
+    Subject.find({ isDisabled: false }, (err, subjects) => {
         if (err) return response.failure(422, { msg: failureMsg.trouble }, res, err)
-        return response.success(200, { data: grades }, res)
+        return response.success(200, { data: subjects }, res)
     })
 }
 
 exports.detail = (req, res) => {
-    Grade.findById(req.params.id, (err, grade) => {
+    Subject.findById(req.params.id, (err, subject) => {
         if (err) return response.failure(422, { msg: failureMsg.trouble }, res, err)
-        return response.success(200, { data: grade }, res)
-    }).populate({ path: 'subjects', match: { isDisabled: false } })
+        return response.success(200, { data: subject }, res)
+    })
 }
 
 exports.create = async (req, res) => {
     const body = req.body
-    const { error } = gradeValidation.validate(body, { abortEarly: false })
+    const { error } = subjectValidation.validate(body, { abortEarly: false })
     if (error) return response.failure(422, extractJoiErrors(error), res)
     
     try {
-        Grade.create({...body, createdBy: req.user.id}, (err, grade) => {
+        Subject.create({...body, createdBy: req.user.id}, (err, subject) => {
             if (err) {
                 switch (err.code) {
                     case 11000:
-                        return response.failure(422, { msg: 'Grade already exists!' }, res, err)
+                        return response.failure(422, { msg: 'Subject already exists!' }, res, err)
                     default:
                         return response.failure(422, { msg: err.message }, res, err)
                 }
             }
 
-            if (!grade) return response.failure(422, { msg: 'No grade created!' }, res, err)
-            response.success(200, { msg: 'Grade has created successfully', data: grade }, res)
+            if (!subject) return response.failure(422, { msg: 'No subject created!' }, res, err)
+            response.success(200, { msg: 'Subject has created successfully', data: subject }, res)
         })
     } catch (err) {
         return response.failure(422, { msg: failureMsg.trouble }, res, err)
@@ -44,11 +44,11 @@ exports.create = async (req, res) => {
 
 exports.update = (req, res) => {
     const body = req.body
-    const { error } = gradeValidation.validate(body, { abortEarly: false })
+    const { error } = subjectValidation.validate(body, { abortEarly: false })
     if (error) return response.failure(422, extractJoiErrors(error), res)
 
     try {
-        Grade.findByIdAndUpdate(req.params.id, body, (err, grade) => {
+        Subject.findByIdAndUpdate(req.params.id, body, (err, subject) => {
             if (err) {
                 switch (err.code) {
                     default:
@@ -56,8 +56,8 @@ exports.update = (req, res) => {
                 }
             }
 
-            if (!grade) return response.failure(422, { msg: 'No grade updated!' }, res, err)
-            response.success(200, { msg: 'Grade has updated successfully', data: grade }, res)
+            if (!subject) return response.failure(422, { msg: 'No subject updated!' }, res, err)
+            response.success(200, { msg: 'Subject has updated successfully', data: subject }, res)
         })
     } catch (err) {
         return response.failure(422, { msg: failureMsg.trouble }, res, err)
@@ -66,7 +66,7 @@ exports.update = (req, res) => {
 
 exports.disable = (req, res) => {
     try {
-        Grade.findByIdAndUpdate(req.params.id, { isDisabled: true }, (err, grade) => {
+        Subject.findByIdAndUpdate(req.params.id, { isDisabled: true }, (err, subject) => {
             if (err) {
                 switch (err.code) {
                     default:
@@ -74,8 +74,8 @@ exports.disable = (req, res) => {
                 }
             }
 
-            if (!grade) return response.failure(422, { msg: 'No grade deleted!' }, res, err)
-            response.success(200, { msg: 'Grade has deleted successfully', data: grade }, res)
+            if (!subject) return response.failure(422, { msg: 'No subject deleted!' }, res, err)
+            response.success(200, { msg: 'Subject has deleted successfully', data: subject }, res)
         })
     } catch (err) {
         return response.failure(422, { msg: failureMsg.trouble }, res, err)
@@ -84,8 +84,8 @@ exports.disable = (req, res) => {
 
 exports._import = async (req, res) => {
     try {
-        const grades = await readExcel(req.file.buffer, req.body.fields)
-        response.success(200, { msg: 'List has been previewed', data: grades }, res)
+        const subjects = await readExcel(req.file.buffer, req.body.fields)
+        response.success(200, { msg: 'List has been previewed', data: subjects }, res)
     } catch (err) {
         return response.failure(err.code, { msg: err.msg }, res)
     }
@@ -93,16 +93,16 @@ exports._import = async (req, res) => {
 
 exports.batch = async (req, res) => {
     try {
-        const grades = req.body
+        const subjects = req.body
         const password = await encryptPassword('default')
 
-        grades.forEach(grade => {
-            grade.password = password
+        subjects.forEach(subject => {
+            subject.password = password
         })
 
-        Grade.insertMany(grades)
+        Subject.insertMany(subjects)
             .then(data => {
-                response.success(200, { msg: `${data.length} ${data.length > 1 ? 'grades' : 'grade'} has been inserted` }, res)
+                response.success(200, { msg: `${data.length} ${data.length > 1 ? 'subjects' : 'subject'} has been inserted` }, res)
             })
             .catch(err => {
                 return response.failure(422, { msg: err.message }, res)

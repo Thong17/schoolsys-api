@@ -3,7 +3,10 @@ const mongoose = require('mongoose')
 const schema = mongoose.Schema(
     {
         name: {
-            type: String,
+            type: Object,
+            index: {
+                unique: true,
+            },
             required: [true, 'Name is required!']
         },
         level: {

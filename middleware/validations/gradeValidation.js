@@ -1,7 +1,7 @@
 const Joi = require('joi')
 
 const gradeValidation = Joi.object({
-    name: Joi.string()
+    name: Joi.object()
         .required(),
 
     level: Joi.string()
