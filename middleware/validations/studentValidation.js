@@ -55,7 +55,7 @@ const updateStudentAcademyValidation = Joi.object({
     previousSchool: Joi.string()
         .allow(''),
 
-    appliedGrade: Joi.string()
+    appliedClass: Joi.string()
         .allow(''),
 
     student: Joi.string()

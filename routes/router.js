@@ -6,5 +6,6 @@ router.use(require('../middleware/security').auth)
 router.use('/admin', require('./admin'))
 router.use('/user', require('./user'))
 router.use('/school', require('./school'))
+router.use('/operation', require('./operation'))
 
 module.exports = router

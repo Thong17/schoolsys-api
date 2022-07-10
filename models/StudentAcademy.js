@@ -8,8 +8,9 @@ const schema = mongoose.Schema(
         previousSchool: {
             type: String,
         },
-        appliedGrade: {
-            type: String,
+        appliedClass: {
+            type: mongoose.Schema.ObjectId,
+            ref: 'Class'
         },
         student: {
             type: mongoose.Schema.ObjectId,
