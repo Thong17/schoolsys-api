@@ -13,7 +13,7 @@ exports.index = (req, res) => {
         return response.success(200, { data: students }, res)
     })
         .populate({ path: 'profile', select: ['filename'] })
-        .populate({ path: 'academy', select: ['appliedClass'] })
+        .populate({ path: 'academy', select: ['appliedClass'], populate: { path: 'appliedClass' } })
 }
 
 exports.detail = (req, res) => {
@@ -189,10 +189,9 @@ exports.updateHealth = (req, res) => {
     }
 }
 
-exports.selectAcademy = (req, res) => {
+exports.selectApplied = (req, res) => {
     StudentAcademy.find({ isDisabled: false, appliedClass: req.params.classId }, (err, students) => {
         if (err) return response.failure(422, { msg: failureMsg.trouble }, res, err)
         return response.success(200, { data: students }, res)
-    })
-        .populate('student')
+    }).populate({ path: 'student', populate: { path: 'profile' } })
 }

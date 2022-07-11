@@ -3,11 +3,12 @@ const Class = require('../models/Class')
 const { failureMsg } = require('../constants/responseMsg')
 const { extractJoiErrors, readExcel } = require('../helpers/utils')
 const { classValidation } = require('../middleware/validations/classValidation')
+const StudentAcademy = require('../models/StudentAcademy')
 
 exports.index = (req, res) => {
-    Class.find({ isDisabled: false }, (err, _classes) => {
+    Class.find({ isDisabled: false }, async (err, classes) => {
         if (err) return response.failure(422, { msg: failureMsg.trouble }, res, err)
-        return response.success(200, { data: _classes }, res)
+        return response.success(200, { data: classes }, res)
     }).populate({ path: 'students', match: { isDisabled: false } }).populate('grade')
 }
 
@@ -15,7 +16,7 @@ exports.detail = (req, res) => {
     Class.findById(req.params.id, (err, _class) => {
         if (err) return response.failure(422, { msg: failureMsg.trouble }, res, err)
         return response.success(200, { data: _class }, res)
-    }).populate({ path: 'students', match: { isDisabled: false } })
+    }).populate({ path: 'students', match: { isDisabled: false }, populate: { path: 'profile' } }).populate('grade')
 }
 
 exports.create = async (req, res) => {
@@ -110,4 +111,44 @@ exports.batch = async (req, res) => {
     } catch (err) {
         return response.failure(422, { msg: failureMsg.trouble }, res)
     }
+}
+
+exports.acceptApplied = async (req, res) => {
+    try {
+        const applied = await StudentAcademy.findById(req.params.id).populate({ path: 'student', match: { isDisabled: false }, populate: { path: 'profile' } })
+        const appliedClass = await Class.findOne({ _id: applied.appliedClass })
+        applied.appliedClass = null
+        applied.save()
+
+        if (appliedClass.students?.indexOf(applied.student?._id) > -1) return response.success(200, { msg: 'Student has already exist in the class' }, res)
+        
+        appliedClass.students.push(applied.student?._id)
+        appliedClass.save()
+        response.success(200, { msg: 'Student has been accepted', data: applied.student }, res)
+    } catch (err) {
+        return response.failure(422, { msg: failureMsg.trouble }, res, err)
+    }
+}
+
+exports.rejectApplied = async (req, res) => {
+    try {
+        const applied = await StudentAcademy.findById(req.params.id)
+        applied.appliedClass = null
+        applied.save()
+        response.success(200, { msg: 'Student has been rejected' }, res)
+    } catch (err) {
+        return response.failure(422, { msg: failureMsg.trouble }, res, err)
+    }
+}
+
+exports.removeStudent = async (req, res) => {
+    const classId = req.body.classId
+    Class.updateOne(
+        { _id: classId },
+        { $pull: { students: req.params.id } }
+    ).then(() => {
+        response.success(200, { msg: 'Student has been removed' }, res)
+    }).catch(err => {
+        return response.failure(422, { msg: failureMsg.trouble }, res, err)
+    })
 }
