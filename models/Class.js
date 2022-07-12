@@ -32,6 +32,10 @@ const schema = mongoose.Schema(
         description: {
             type: String,
         },
+        teacher: {
+            type: mongoose.Schema.ObjectId,
+            ref: 'Teacher'
+        },
         isActive: {
             type: Boolean,
             default: false

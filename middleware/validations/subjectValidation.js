@@ -18,6 +18,9 @@ const subjectValidation = Joi.object({
 
     grade: Joi.string()
         .required(),
+
+    teacher: Joi.string()
+        .allow(''),
 })
 
 module.exports = { subjectValidation }

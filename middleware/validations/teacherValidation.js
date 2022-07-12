@@ -19,6 +19,12 @@ const createTeacherValidation = Joi.object({
     contact: Joi.string()
         .allow(''),
 
+    grade: Joi.string()
+        .allow(''),
+
+    subject: Joi.string()
+        .allow(''),
+
     email: Joi.string()
         .allow(''),
 

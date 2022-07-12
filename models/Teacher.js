@@ -40,10 +40,12 @@ const schema = mongoose.Schema(
             type: mongoose.Schema.ObjectId,
             ref: 'Image'
         },
-        scores: [{
-            type: mongoose.Schema.ObjectId,
-            ref: 'Score'
-        }],
+        grade: {
+            type: String,
+        },
+        subject: {
+            type: String,
+        },
         createdBy: {
             type: mongoose.Schema.ObjectId,
             ref: 'User'

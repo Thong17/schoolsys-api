@@ -7,9 +7,6 @@ const schema = mongoose.Schema(
             type: Object,
             required: [true, 'Name is required!']
         },
-        level: {
-            type: String,
-        },
         passScore: {
             type: Number,
             required: [true, 'Full Score is required!']
@@ -24,6 +21,10 @@ const schema = mongoose.Schema(
         grade: {
             type: mongoose.Schema.ObjectId,
             ref: 'Grade'
+        },
+        teacher: {
+            type: mongoose.Schema.ObjectId,
+            ref: 'Teacher'
         },
         createdBy: {
             type: mongoose.Schema.ObjectId,
