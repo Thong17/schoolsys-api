@@ -12,6 +12,10 @@ const schema = mongoose.Schema(
             type: mongoose.Schema.ObjectId,
             ref: 'Class'
         },
+        currentClass: {
+            type: mongoose.Schema.ObjectId,
+            ref: 'Class'
+        },
         student: {
             type: mongoose.Schema.ObjectId,
             ref: 'Student'

@@ -4,6 +4,7 @@ const { failureMsg } = require('../constants/responseMsg')
 const { extractJoiErrors, readExcel } = require('../helpers/utils')
 const { classValidation } = require('../middleware/validations/classValidation')
 const StudentAcademy = require('../models/StudentAcademy')
+const Student = require('../models/Student')
 
 exports.index = (req, res) => {
     Class.find({ isDisabled: false }, async (err, classes) => {
@@ -118,12 +119,14 @@ exports.acceptApplied = async (req, res) => {
         const applied = await StudentAcademy.findById(req.params.id).populate({ path: 'student', match: { isDisabled: false }, populate: { path: 'profile' } })
         const appliedClass = await Class.findOne({ _id: applied.appliedClass })
         applied.appliedClass = null
-        applied.save()
-
-        if (appliedClass.students?.indexOf(applied.student?._id) > -1) return response.success(200, { msg: 'Student has already exist in the class' }, res)
         
+        if (appliedClass.students?.indexOf(applied.student?._id) > -1) return response.failure(406, { msg: 'Student has already exist in the class' }, res)
+        if (applied.currentClass) return response.failure(406, { msg: 'Student has already in the class' }, res)
+
+        applied.currentClass = appliedClass._id
         appliedClass.students.push(applied.student?._id)
         appliedClass.save()
+        applied.save()
         response.success(200, { msg: 'Student has been accepted', data: applied.student }, res)
     } catch (err) {
         return response.failure(422, { msg: failureMsg.trouble }, res, err)
@@ -146,8 +149,15 @@ exports.removeStudent = async (req, res) => {
     Class.updateOne(
         { _id: classId },
         { $pull: { students: req.params.id } }
-    ).then(() => {
-        response.success(200, { msg: 'Student has been removed' }, res)
+    ).then(async () => {
+        try {
+            const student = await Student.findById(req.params.id)
+            await StudentAcademy.findByIdAndUpdate(student.academy, { currentClass: null })
+            response.success(200, { msg: 'Student has been removed' }, res)
+        } catch (err) {
+            return response.failure(422, { msg: failureMsg.trouble }, res, err)
+        }
+        
     }).catch(err => {
         return response.failure(422, { msg: failureMsg.trouble }, res, err)
     })
