@@ -13,7 +13,7 @@ exports.index = (req, res) => {
         return response.success(200, { data: students }, res)
     })
         .populate({ path: 'profile', select: ['filename'] })
-        .populate({ path: 'academy', select: ['appliedClass'], populate: { path: 'appliedClass' } })
+        .populate({ path: 'academy', select: ['appliedClass', 'currentClass'], populate: [{ path: 'appliedClass' }, { path: 'currentClass' }] })
 }
 
 exports.detail = (req, res) => {
