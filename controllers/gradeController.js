@@ -15,7 +15,7 @@ exports.detail = (req, res) => {
     Grade.findById(req.params.id, (err, grade) => {
         if (err) return response.failure(422, { msg: failureMsg.trouble }, res, err)
         return response.success(200, { data: grade }, res)
-    }).populate({ path: 'subjects', match: { isDisabled: false } })
+    }).populate({ path: 'subjects', match: { isDisabled: false }, populate: { path: 'teacher' }})
 }
 
 exports.create = async (req, res) => {

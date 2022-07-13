@@ -15,7 +15,7 @@ exports.detail = (req, res) => {
     Subject.findById(req.params.id, (err, subject) => {
         if (err) return response.failure(422, { msg: failureMsg.trouble }, res, err)
         return response.success(200, { data: subject }, res)
-    })
+    }).populate({ path: 'teacher' })
 }
 
 exports.create = async (req, res) => {
