@@ -1,5 +1,5 @@
 const mongoose = require('mongoose')
-const StudentAcademy = require('./StudentAcademy')
+const StudentApplication = require('./StudentApplication')
 
 const schema = mongoose.Schema(
     {
@@ -48,7 +48,7 @@ const schema = mongoose.Schema(
 
 schema.post('find', async function (data) {
     for (const _class in data) {
-        const totalApplied = await StudentAcademy.count({ appliedClass: data[_class]?._id }).exec()
+        const totalApplied = await StudentApplication.count({ appliedClass: data[_class]?._id }).exec()
         data[_class]['totalApplied'] = totalApplied
     }
 })

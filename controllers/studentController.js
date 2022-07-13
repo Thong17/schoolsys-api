@@ -2,9 +2,9 @@ const response = require('../helpers/response')
 const Student = require('../models/Student')
 const { failureMsg } = require('../constants/responseMsg')
 const { extractJoiErrors, readExcel, encryptPassword } = require('../helpers/utils')
-const { createStudentValidation, updateStudentAcademyValidation, updateStudentFamilyValidation, updateStudentHealthValidation } = require('../middleware/validations/studentValidation')
+const { createStudentValidation, updateStudentApplicationValidation, updateStudentFamilyValidation, updateStudentHealthValidation } = require('../middleware/validations/studentValidation')
 const StudentFamily = require('../models/StudentFamily')
-const StudentAcademy = require('../models/StudentAcademy')
+const StudentApplication = require('../models/StudentApplication')
 const StudentHealth = require('../models/StudentHealth')
 
 exports.index = (req, res) => {
@@ -13,14 +13,14 @@ exports.index = (req, res) => {
         return response.success(200, { data: students }, res)
     })
         .populate({ path: 'profile', select: ['filename'] })
-        .populate({ path: 'academy', select: ['appliedClass', 'currentClass'], populate: [{ path: 'appliedClass' }, { path: 'currentClass' }] })
+        .populate({ path: 'application', select: ['appliedClass', 'currentClass'], populate: [{ path: 'appliedClass' }, { path: 'currentClass' }] })
 }
 
 exports.detail = (req, res) => {
     Student.findById(req.params.id, (err, student) => {
         if (err) return response.failure(422, { msg: failureMsg.trouble }, res, err)
         return response.success(200, { data: student }, res)
-    }).populate('profile').populate('family').populate('health').populate('academy')
+    }).populate('profile').populate('family').populate('health').populate('application')
 }
 
 exports.create = async (req, res) => {
@@ -145,13 +145,13 @@ exports.updateFamily = (req, res) => {
     }
 }
 
-exports.updateAcademy = (req, res) => {
+exports.updateApplication = (req, res) => {
     const body = req.body
-    const { error } = updateStudentAcademyValidation.validate(body, { abortEarly: false })
+    const { error } = updateStudentApplicationValidation.validate(body, { abortEarly: false })
     if (error) return response.failure(422, extractJoiErrors(error), res)
 
     try {
-        StudentAcademy.findByIdAndUpdate(req.params.id, body, (err, student) => {
+        StudentApplication.findByIdAndUpdate(req.params.id, body, (err, student) => {
             if (err) {
                 switch (err.code) {
                     default:
@@ -190,7 +190,7 @@ exports.updateHealth = (req, res) => {
 }
 
 exports.selectApplied = (req, res) => {
-    StudentAcademy.find({ isDisabled: false, appliedClass: req.params.classId }, (err, students) => {
+    StudentApplication.find({ isDisabled: false, appliedClass: req.params.classId }, (err, students) => {
         if (err) return response.failure(422, { msg: failureMsg.trouble }, res, err)
         return response.success(200, { data: students }, res)
     }).populate({ path: 'student', populate: { path: 'profile' } })

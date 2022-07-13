@@ -26,4 +26,4 @@ const schema = mongoose.Schema(
     }
 )
 
-module.exports = mongoose.model('StudentAcademy', schema)
+module.exports = mongoose.model('StudentApplication', schema)

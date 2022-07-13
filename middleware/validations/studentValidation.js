@@ -48,7 +48,7 @@ const updateStudentFamilyValidation = Joi.object({
         .required(),
 })
 
-const updateStudentAcademyValidation = Joi.object({
+const updateStudentApplicationValidation = Joi.object({
     previousGrade: Joi.string()
         .allow(''),
 
@@ -76,4 +76,4 @@ const updateStudentHealthValidation = Joi.object({
         .required(),
 })
 
-module.exports = { createStudentValidation, updateStudentAcademyValidation, updateStudentFamilyValidation, updateStudentHealthValidation }
+module.exports = { createStudentValidation, updateStudentApplicationValidation, updateStudentFamilyValidation, updateStudentHealthValidation }

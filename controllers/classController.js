@@ -3,7 +3,7 @@ const Class = require('../models/Class')
 const { failureMsg } = require('../constants/responseMsg')
 const { extractJoiErrors, readExcel } = require('../helpers/utils')
 const { classValidation } = require('../middleware/validations/classValidation')
-const StudentAcademy = require('../models/StudentAcademy')
+const StudentApplication = require('../models/StudentApplication')
 const Student = require('../models/Student')
 
 exports.index = (req, res) => {
@@ -116,7 +116,7 @@ exports.batch = async (req, res) => {
 
 exports.acceptApplied = async (req, res) => {
     try {
-        const applied = await StudentAcademy.findById(req.params.id).populate({ path: 'student', match: { isDisabled: false }, populate: { path: 'profile' } })
+        const applied = await StudentApplication.findById(req.params.id).populate({ path: 'student', match: { isDisabled: false }, populate: { path: 'profile' } })
         const appliedClass = await Class.findOne({ _id: applied.appliedClass })
         applied.appliedClass = null
         
@@ -135,7 +135,7 @@ exports.acceptApplied = async (req, res) => {
 
 exports.rejectApplied = async (req, res) => {
     try {
-        const applied = await StudentAcademy.findById(req.params.id)
+        const applied = await StudentApplication.findById(req.params.id)
         applied.appliedClass = null
         applied.save()
         response.success(200, { msg: 'Student has been rejected' }, res)
@@ -152,7 +152,7 @@ exports.removeStudent = async (req, res) => {
     ).then(async () => {
         try {
             const student = await Student.findById(req.params.id)
-            await StudentAcademy.findByIdAndUpdate(student.academy, { currentClass: null })
+            await StudentApplication.findByIdAndUpdate(student.application, { currentClass: null })
             response.success(200, { msg: 'Student has been removed' }, res)
         } catch (err) {
             return response.failure(422, { msg: failureMsg.trouble }, res, err)

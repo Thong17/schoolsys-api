@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 const Image = require('./Image')
 const User = require('./User')
-const StudentAcademy = require('./StudentAcademy')
+const StudentApplication = require('./StudentApplication')
 const StudentFamily = require('./StudentFamily')
 const StudentHealth = require('./StudentHealth')
 
@@ -42,9 +42,9 @@ const schema = mongoose.Schema(
             type: mongoose.Schema.ObjectId,
             ref: 'Image'
         },
-        academy: {
+        application: {
             type: mongoose.Schema.ObjectId,
-            ref: 'StudentAcademy'
+            ref: 'StudentApplication'
         },
         family: {
             type: mongoose.Schema.ObjectId,
@@ -98,15 +98,15 @@ schema.post('save', async function () {
         })
         await this.model('Student').findOneAndUpdate({ _id: this.id }, { authenticate: user.id })
     }
-    if (!this.academy) {
-        const academy = await StudentAcademy.create({ student: this.id })
-        await this.model('Student').findOneAndUpdate({ _id: this.id }, { academy: academy.id })
+    if (!this.application) {
+        const application = await StudentApplication.create({ student: this.id })
+        await this.model('Student').findOneAndUpdate({ _id: this.id }, { application: application.id })
     }
     if (!this.family) {
         const family = await StudentFamily.create({ student: this.id })
         await this.model('Student').findOneAndUpdate({ _id: this.id }, { family: family.id })
     }
-    if (!this.academy) {
+    if (!this.application) {
         const health = await StudentHealth.create({ student: this.id })
         await this.model('Student').findOneAndUpdate({ _id: this.id }, { health: health.id })
     }
