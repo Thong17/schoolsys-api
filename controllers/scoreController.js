@@ -4,6 +4,7 @@ const Student = require('../models/Student')
 const { failureMsg } = require('../constants/responseMsg')
 const { extractJoiErrors, readExcel } = require('../helpers/utils')
 const { scoreValidation } = require('../middleware/validations/scoreValidation')
+const StudentAcademy = require('../models/StudentAcademy')
 
 exports.index = (req, res) => {
     Score.find({ isDisabled: false }, (err, scores) => {
@@ -74,6 +75,29 @@ exports.disable = (req, res) => {
         try {
             await Student.updateOne(
                 { _id: score.student },
+                { $pull: { scores: scoreId } }
+            )
+            response.success(200, { msg: 'Score has deleted successfully', data: score }, res)
+        } catch (err) {
+            return response.failure(422, { msg: failureMsg.trouble }, res, err)
+        }
+    })
+}
+
+exports._delete = (req, res) => {
+    const scoreId = req.params.id
+    Score.findByIdAndDelete(scoreId, async (err, score) => {
+        if (err) {
+            switch (err.code) {
+                default:
+                    return response.failure(422, { msg: err.message }, res, err)
+            }
+        }
+        if (!score) return response.failure(422, { msg: 'No score deleted!' }, res, err)
+
+        try {
+            await StudentAcademy.updateOne(
+                { _id: score.academy },
                 { $pull: { scores: scoreId } }
             )
             response.success(200, { msg: 'Score has deleted successfully', data: score }, res)

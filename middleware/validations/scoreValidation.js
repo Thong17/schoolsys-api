@@ -7,6 +7,9 @@ const scoreValidation = Joi.object({
     description: Joi.string()
         .allow(''),
 
+    academy: Joi.string()
+        .required(),
+
     student: Joi.string()
         .required(),
 

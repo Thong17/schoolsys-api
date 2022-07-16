@@ -42,6 +42,14 @@ const schema = mongoose.Schema(
             type: mongoose.Schema.ObjectId,
             ref: 'Image'
         },
+        currentAcademy: {
+            type: mongoose.Schema.ObjectId,
+            ref: 'StudentAcademy'
+        },
+        academies: [{
+            type: mongoose.Schema.ObjectId,
+            ref: 'StudentAcademy'
+        }],
         application: {
             type: mongoose.Schema.ObjectId,
             ref: 'StudentApplication'
@@ -54,10 +62,6 @@ const schema = mongoose.Schema(
             type: mongoose.Schema.ObjectId,
             ref: 'StudentHealth'
         },
-        scores: [{
-            type: mongoose.Schema.ObjectId,
-            ref: 'Score'
-        }],
         createdBy: {
             type: mongoose.Schema.ObjectId,
             ref: 'User'

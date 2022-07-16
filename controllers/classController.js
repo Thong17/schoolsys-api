@@ -1,11 +1,12 @@
 const response = require('../helpers/response')
 const Class = require('../models/Class')
+const Student = require('../models/Student')
+const Subject = require('../models/Subject')
+const StudentAcademy = require('../models/StudentAcademy')
+const StudentApplication = require('../models/StudentApplication')
 const { failureMsg } = require('../constants/responseMsg')
 const { extractJoiErrors, readExcel } = require('../helpers/utils')
 const { classValidation } = require('../middleware/validations/classValidation')
-const StudentApplication = require('../models/StudentApplication')
-const Student = require('../models/Student')
-const Subject = require('../models/Subject')
 
 exports.index = (req, res) => {
     Class.find({ isDisabled: false }, async (err, classes) => {
@@ -18,7 +19,7 @@ exports.detail = (req, res) => {
     Class.findById(req.params.id, (err, _class) => {
         if (err) return response.failure(422, { msg: failureMsg.trouble }, res, err)
         return response.success(200, { data: _class }, res)
-    }).populate({ path: 'students', match: { isDisabled: false }, populate: [{ path: 'profile' }, { path: 'scores' }] }).populate('grade')
+    }).populate({ path: 'students', match: { isDisabled: false }, populate: [{ path: 'profile'}, { path: 'currentAcademy', populate: { path: 'scores' } }] }).populate('grade')
 }
 
 exports.create = async (req, res) => {
@@ -117,18 +118,26 @@ exports.batch = async (req, res) => {
 
 exports.acceptApplied = async (req, res) => {
     try {
-        const applied = await StudentApplication.findById(req.params.id).populate({ path: 'student', match: { isDisabled: false }, populate: { path: 'profile' } })
+        const applied = await StudentApplication.findById(req.params.id)
+        const student = await Student.findById(applied.student)
         const appliedClass = await Class.findOne({ _id: applied.appliedClass })
-        applied.appliedClass = null
-        
-        if (appliedClass.students?.indexOf(applied.student?._id) > -1) return response.failure(406, { msg: 'Student has already exist in the class' }, res)
-        if (applied.currentClass) return response.failure(406, { msg: 'Student has already in the class' }, res)
 
-        applied.currentClass = appliedClass._id
-        appliedClass.students.push(applied.student?._id)
-        appliedClass.save()
+        if (appliedClass.students?.indexOf(student?._id) > -1) return response.failure(406, { msg: 'Student has already exist in the class' }, res)
+        if (student.currentAcademy) return response.failure(406, { msg: 'Student has already in the class' }, res)
+
+        const academy = await StudentAcademy.create({ student: student?._id, class: appliedClass._id })
+
+        student.currentAcademy = academy._id
+        student.academies.push(academy._id)
+        student.save()
+
+        applied.appliedClass = null
         applied.save()
-        response.success(200, { msg: 'Student has been accepted', data: applied.student }, res)
+
+        appliedClass.students.push(student?._id)
+        appliedClass.save()
+
+        response.success(200, { msg: 'Student has been accepted', data: student }, res)
     } catch (err) {
         return response.failure(422, { msg: failureMsg.trouble }, res, err)
     }
@@ -153,26 +162,32 @@ exports.removeStudent = async (req, res) => {
     ).then(async () => {
         try {
             const student = await Student.findById(req.params.id)
-            await StudentApplication.findByIdAndUpdate(student.application, { currentClass: null })
+            const academy = await StudentAcademy.findById(student.currentAcademy)
+
+            student.currentAcademy = null
+            student.save()
+
+            academy.endedAt = Date.now()
+            academy.save()
+
             response.success(200, { msg: 'Student has been removed' }, res)
         } catch (err) {
             return response.failure(422, { msg: failureMsg.trouble }, res, err)
         }
-        
     }).catch(err => {
         return response.failure(422, { msg: failureMsg.trouble }, res, err)
     })
 }
 
 exports.listStudent = (req, res) => {
-    Student.find({ isDisabled: false, class: req.params.id }, async (err, students) => {
+    Class.findById(req.params.id, async (err, _class) => {
         if (err) return response.failure(422, { msg: failureMsg.trouble }, res, err)
-        return response.success(200, { data: students }, res)
-    }).populate('scores')
+        return response.success(200, { data: _class?.students }, res)
+    }).populate({ path: 'students', populate: { path: 'currentAcademy', populate: { path: 'scores' } } })
 }
 
 exports.listSubject = (req, res) => {
-    Subject.find({ isDisabled: false, class: req.params.id }, async (err, subjects) => {
+    Subject.find({ isDisabled: false, grade: req.params.id }, async (err, subjects) => {
         if (err) return response.failure(422, { msg: failureMsg.trouble }, res, err)
         return response.success(200, { data: subjects }, res)
     })

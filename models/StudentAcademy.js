@@ -2,13 +2,11 @@ const mongoose = require('mongoose')
 
 const schema = mongoose.Schema(
     {
-        previousGrade: {
-            type: String,
-        },
-        previousSchool: {
-            type: String,
-        },
-        appliedClass: {
+        scores: [{
+            type: mongoose.Schema.ObjectId,
+            ref: 'Score'
+        }],
+        class: {
             type: mongoose.Schema.ObjectId,
             ref: 'Class'
         },
@@ -16,10 +14,13 @@ const schema = mongoose.Schema(
             type: mongoose.Schema.ObjectId,
             ref: 'Student'
         },
+        endedAt: {
+            type: Date
+        }
     },
     {
         timestamps: { createdAt: 'createdAt', updatedAt: 'updatedAt' }
     }
 )
 
-module.exports = mongoose.model('StudentApplication', schema)
+module.exports = mongoose.model('StudentAcademy', schema)

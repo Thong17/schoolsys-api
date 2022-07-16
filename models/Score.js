@@ -1,5 +1,5 @@
 const mongoose = require('mongoose')
-const Student = require('./Student')
+const StudentAcademy = require('./StudentAcademy')
 
 const schema = mongoose.Schema(
     {
@@ -9,6 +9,10 @@ const schema = mongoose.Schema(
         },
         description: {
             type: String,
+        },
+        academy: {
+            type: mongoose.Schema.ObjectId,
+            ref: 'StudentAcademy'
         },
         student: {
             type: mongoose.Schema.ObjectId,
@@ -33,9 +37,9 @@ const schema = mongoose.Schema(
 )
 
 schema.post('save', async function () {
-    const student = await Student.findById(this.student)
-    student.scores.push(this._id)
-    student.save()
+    const academy = await StudentAcademy.findById(this.academy)
+    academy.scores.push(this._id)
+    academy.save()
 })
 
 module.exports = mongoose.model('Score', schema)
