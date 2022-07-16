@@ -1,4 +1,5 @@
 const mongoose = require('mongoose')
+const Student = require('./Student')
 
 const schema = mongoose.Schema(
     {
@@ -30,5 +31,11 @@ const schema = mongoose.Schema(
         timestamps: { createdAt: 'createdAt', updatedAt: 'updatedAt' }
     }
 )
+
+schema.post('save', async function () {
+    const student = await Student.findById(this.student)
+    student.scores.push(this._id)
+    student.save()
+})
 
 module.exports = mongoose.model('Score', schema)

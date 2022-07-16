@@ -5,6 +5,7 @@ const { extractJoiErrors, readExcel } = require('../helpers/utils')
 const { classValidation } = require('../middleware/validations/classValidation')
 const StudentApplication = require('../models/StudentApplication')
 const Student = require('../models/Student')
+const Subject = require('../models/Subject')
 
 exports.index = (req, res) => {
     Class.find({ isDisabled: false }, async (err, classes) => {
@@ -17,7 +18,7 @@ exports.detail = (req, res) => {
     Class.findById(req.params.id, (err, _class) => {
         if (err) return response.failure(422, { msg: failureMsg.trouble }, res, err)
         return response.success(200, { data: _class }, res)
-    }).populate({ path: 'students', match: { isDisabled: false }, populate: { path: 'profile' } }).populate('grade')
+    }).populate({ path: 'students', match: { isDisabled: false }, populate: [{ path: 'profile' }, { path: 'scores' }] }).populate('grade')
 }
 
 exports.create = async (req, res) => {
@@ -160,5 +161,19 @@ exports.removeStudent = async (req, res) => {
         
     }).catch(err => {
         return response.failure(422, { msg: failureMsg.trouble }, res, err)
+    })
+}
+
+exports.listStudent = (req, res) => {
+    Student.find({ isDisabled: false, class: req.params.id }, async (err, students) => {
+        if (err) return response.failure(422, { msg: failureMsg.trouble }, res, err)
+        return response.success(200, { data: students }, res)
+    }).populate('scores')
+}
+
+exports.listSubject = (req, res) => {
+    Subject.find({ isDisabled: false, class: req.params.id }, async (err, subjects) => {
+        if (err) return response.failure(422, { msg: failureMsg.trouble }, res, err)
+        return response.success(200, { data: subjects }, res)
     })
 }

@@ -1,7 +1,7 @@
 const multer = require('multer')
 const upload = multer()
 const router = require('express').Router()
-const { index, detail, create, disable, update, batch, _import, removeStudent, rejectApplied, acceptApplied, listStudent, listSubject } = require('../../controllers/classController')
+const { index, detail, create, disable, update, batch, _import } = require('../../controllers/scoreController')
 const security = require('../../middleware/security')
 const { privilege } = require('../../constants/roleMap')
 
@@ -31,26 +31,6 @@ router.post('/excel/import', upload.single('excel'), (req, res) => {
 
 router.post('/batch', (req, res) => {
     batch(req, res)
-})
-
-router.put('/accept/applied/:id', (req, res) => {
-    acceptApplied(req, res)
-})
-
-router.delete('/reject/applied/:id', (req, res) => {
-    rejectApplied(req, res)
-})
-
-router.delete('/student/remove/:id', (req, res) => {
-    removeStudent(req, res)
-})
-
-router.get('/:id/student', security.role(privilege.role.detail), (req, res) => {
-    listStudent(req, res)
-})
-
-router.get('/:id/subject', security.role(privilege.role.detail), (req, res) => {
-    listSubject(req, res)
 })
 
 module.exports = router
