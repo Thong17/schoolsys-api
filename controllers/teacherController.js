@@ -9,7 +9,7 @@ exports.index = (req, res) => {
     Teacher.find({ isDisabled: false }, (err, teachers) => {
         if (err) return response.failure(422, { msg: failureMsg.trouble }, res, err)
         return response.success(200, { data: teachers }, res)
-    })
+    }).populate('profile')
 }
 
 exports.detail = (req, res) => {
