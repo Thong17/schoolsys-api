@@ -183,7 +183,7 @@ exports.listStudent = (req, res) => {
     Class.findById(req.params.id, async (err, _class) => {
         if (err) return response.failure(422, { msg: failureMsg.trouble }, res, err)
         return response.success(200, { data: _class?.students }, res)
-    }).populate({ path: 'students', populate: { path: 'currentAcademy', populate: { path: 'scores' } } })
+    }).populate({ path: 'students', populate: [{ path: 'currentAcademy', populate: { path: 'scores' } }, { path: 'profile' }] })
 }
 
 exports.listSubject = (req, res) => {
