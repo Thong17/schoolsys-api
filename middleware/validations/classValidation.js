@@ -16,6 +16,9 @@ const classValidation = Joi.object({
     teacher: Joi.string()
         .allow(''),
 
+    monitor: Joi.string()
+        .allow(''),
+
     description: Joi.string()
         .allow(''),
 
