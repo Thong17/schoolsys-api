@@ -19,7 +19,7 @@ exports.detail = (req, res) => {
     Class.findById(req.params.id, (err, _class) => {
         if (err) return response.failure(422, { msg: failureMsg.trouble }, res, err)
         return response.success(200, { data: _class }, res)
-    }).populate({ path: 'students', match: { isDisabled: false }, populate: [{ path: 'profile'}, { path: 'currentAcademy', populate: { path: 'scores' } }] }).populate('grade')
+    }).populate({ path: 'students', match: { isDisabled: false }, populate: [{ path: 'profile'}, { path: 'currentAcademy', populate: { path: 'scores' } }] }).populate({ path: 'grade', populate: { path: 'subjects' } })
 }
 
 exports.create = async (req, res) => {
