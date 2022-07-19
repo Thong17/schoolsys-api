@@ -61,8 +61,5 @@ router.put('/enable/:id', security.role(privilege.role.detail), (req, res) => {
     enable(req, res)
 })
 
-router.put('/disable/:id', security.role(privilege.role.delete), (req, res) => {
-    disable(req, res)
-})
 
 module.exports = router

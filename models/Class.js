@@ -49,6 +49,10 @@ const schema = mongoose.Schema(
         isDisabled: {
             type: Boolean,
             default: false
+        },
+        startedAt: { 
+            type: Date,
+            default: Date.now
         }
     },
     {
@@ -72,7 +76,7 @@ schema.statics.graduate = function (id, createdBy, cb) {
             for (const key in _class.students) {
                 if (Object.hasOwnProperty.call(_class.students, key)) {
                     const student = _class.students[key]
-                    student?.currentAcademy?.scores && scores.push(student?.currentAcademy?.scores)
+                    scores = student?.currentAcademy?.scores && [...scores, ...student?.currentAcademy?.scores]
                     await Student.findByIdAndUpdate(student?._id, { currentAcademy: null })
                 }
             }
@@ -88,7 +92,7 @@ schema.statics.graduate = function (id, createdBy, cb) {
                 createdBy,
                 teacher: _class.teacher,
                 monitor: _class.monitor,
-                startedAt: _class.createdAt,
+                startedAt: _class.startedAt,
                 endedAt: Date.now()
             })
 
