@@ -56,7 +56,8 @@ const updateStudentApplicationValidation = Joi.object({
         .allow(''),
 
     appliedClass: Joi.string()
-        .allow(''),
+        .allow('')
+        .allow(null),
 
     student: Joi.string()
         .required(),

@@ -20,7 +20,8 @@ const subjectValidation = Joi.object({
         .required(),
 
     teacher: Joi.string()
-        .allow(''),
+        .allow('')
+        .allow(null),
 })
 
 module.exports = { subjectValidation }

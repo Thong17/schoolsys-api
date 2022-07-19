@@ -1,7 +1,7 @@
 const multer = require('multer')
 const upload = multer()
 const router = require('express').Router()
-const { index, detail, create, disable, update, batch, _import, removeStudent, rejectApplied, acceptApplied, listStudent, listSubject, graduate, enable, _delete } = require('../../controllers/classController')
+const { index, detail, create, update, batch, _import, removeStudent, rejectApplied, acceptApplied, listStudent, listSubject, graduate, enable, _delete } = require('../../controllers/classController')
 const security = require('../../middleware/security')
 const { privilege } = require('../../constants/roleMap')
 

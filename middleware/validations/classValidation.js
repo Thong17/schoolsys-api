@@ -14,10 +14,12 @@ const classValidation = Joi.object({
         .required(),
 
     teacher: Joi.string()
-        .allow(''),
+        .allow('')
+        .allow(null),
 
     monitor: Joi.string()
-        .allow(''),
+        .allow('')
+        .allow(null),
 
     description: Joi.string()
         .allow(''),
