@@ -68,7 +68,7 @@ exports.update = (req, res) => {
     }
 }
 
-exports.disable = (req, res) => {
+exports._delete = (req, res) => {
     try {
         Class.findByIdAndUpdate(req.params.id, { isDisabled: true }, (err, _class) => {
             if (err) {
@@ -191,4 +191,47 @@ exports.listSubject = (req, res) => {
         if (err) return response.failure(422, { msg: failureMsg.trouble }, res, err)
         return response.success(200, { data: subjects }, res)
     })
+}
+
+exports.graduate = (req, res) => {
+    Class.graduate(req.params.id, req.user.id, (err, data) => {
+        if (err) return response.failure(err.code, { msg: err.msg }, res, err)
+        return response.success(200, { data }, res)
+    })
+}
+
+exports.enable = (req, res) => {
+    try {
+        Class.findByIdAndUpdate(req.params.id, { isActive: true }, (err, _class) => {
+            if (err) {
+                switch (err.code) {
+                    default:
+                        return response.failure(422, { msg: err.message }, res, err)
+                }
+            }
+
+            if (!_class) return response.failure(422, { msg: 'No class enabled!' }, res, err)
+            response.success(200, { msg: 'Class has enabled successfully', data: _class }, res)
+        })
+    } catch (err) {
+        return response.failure(422, { msg: failureMsg.trouble }, res, err)
+    }
+}
+
+exports.disable = (req, res) => {
+    try {
+        Class.findByIdAndUpdate(req.params.id, { isActive: false }, (err, _class) => {
+            if (err) {
+                switch (err.code) {
+                    default:
+                        return response.failure(422, { msg: err.message }, res, err)
+                }
+            }
+
+            if (!_class) return response.failure(422, { msg: 'No class disabled!' }, res, err)
+            response.success(200, { msg: 'Class has disabled successfully', data: _class }, res)
+        })
+    } catch (err) {
+        return response.failure(422, { msg: failureMsg.trouble }, res, err)
+    }
 }

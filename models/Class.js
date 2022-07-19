@@ -1,5 +1,7 @@
 const mongoose = require('mongoose')
 const StudentApplication = require('./StudentApplication')
+const Academy = require('./Academy')
+const Student = require('./Student')
 
 const schema = mongoose.Schema(
     {
@@ -60,5 +62,46 @@ schema.post('find', async function (data) {
         data[_class]['totalApplied'] = totalApplied
     }
 })
+
+schema.statics.graduate = function (id, createdBy, cb) {
+    this.findById(id).populate({ path: 'students', populate: { path: 'currentAcademy' } }).populate('grade')
+        .then(async _class => {
+            if (!_class) return cb({ code: 404, msg: 'Class is not exist' }, null)
+            let scores = []
+
+            for (const key in _class.students) {
+                if (Object.hasOwnProperty.call(_class.students, key)) {
+                    const student = _class.students[key]
+                    student?.currentAcademy?.scores && scores.push(student?.currentAcademy?.scores)
+                    await Student.findByIdAndUpdate(student?._id, { currentAcademy: null })
+                }
+            }
+
+            await Academy.create({
+                name: _class.name,
+                room: _class.room,
+                schedule: _class.schedule,
+                students: _class.students,
+                subjects: _class.grade?.subjects,
+                scores,
+                grade: _class.grade?.name,
+                createdBy,
+                teacher: _class.teacher,
+                monitor: _class.monitor,
+                startedAt: _class.createdAt,
+                endedAt: Date.now()
+            })
+
+            _class.students = []
+            _class.isActive = false
+            _class.save()
+
+            cb(null, { code: 200, msg: 'Class has been graduated' })
+        })
+        .catch(err => {
+            cb({ code: 422, msg: err.message }, null)
+        })
+}
+
 
 module.exports = mongoose.model('Class', schema)
