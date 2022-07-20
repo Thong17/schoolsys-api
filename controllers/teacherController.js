@@ -6,10 +6,30 @@ const { extractJoiErrors, readExcel, encryptPassword } = require('../helpers/uti
 const { createTeacherValidation } = require('../middleware/validations/teacherValidation')
 
 exports.index = (req, res) => {
-    Teacher.find({ isDisabled: false }, (err, teachers) => {
+    const limit = parseInt(req.query.limit) || 100
+    const page = parseInt(req.query.page) || 0
+    const search = req.query.search
+    const field = req.query.field || 'tags'
+    const filter = req.query.filter || 'createdAt'
+    const sort = req.query.sort || 'asc'
+
+    let filterObj = { [filter]: sort }
+    let query = {}
+    if (search) {
+        query[field] = {
+            $regex: new RegExp(search, 'i')
+        }
+    }
+
+    Teacher.find({ isDisabled: false, ...query }, async (err, teachers) => {
         if (err) return response.failure(422, { msg: failureMsg.trouble }, res, err)
-        return response.success(200, { data: teachers }, res)
-    }).populate('profile')
+
+        const totalCount = await Teacher.count({ isDisabled: false })
+        return response.success(200, { data: teachers, length: totalCount }, res)
+    })
+        .skip(page * limit).limit(limit)
+        .sort(filterObj)
+        .populate('profile')
 }
 
 exports.detail = (req, res) => {
