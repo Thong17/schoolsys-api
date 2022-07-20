@@ -5,10 +5,30 @@ const { extractJoiErrors, readExcel } = require('../helpers/utils')
 const { gradeValidation } = require('../middleware/validations/gradeValidation')
 
 exports.index = (req, res) => {
-    Grade.find({ isDisabled: false }, (err, grades) => {
+    const limit = parseInt(req.query.limit) || 100
+    const page = parseInt(req.query.page) || 0
+    const search = req.query.search
+    const field = req.query.field || 'tags'
+    const filter = req.query.filter || 'createdAt'
+    const sort = req.query.sort || 'asc'
+
+    let filterObj = { [filter]: sort }
+    let query = {}
+    if (search) {
+        query[field] = {
+            $regex: new RegExp(search, 'i')
+        }
+    }
+
+    Grade.find({ isDisabled: false, ...query }, async (err, grades) => {
         if (err) return response.failure(422, { msg: failureMsg.trouble }, res, err)
-        return response.success(200, { data: grades }, res)
-    }).populate({ path: 'subjects', match: { isDisabled: false } })
+
+        const totalCount = await Grade.count({ isDisabled: false })
+        return response.success(200, { data: grades, length: totalCount }, res)
+    })  
+        .skip(page * limit).limit(limit)
+        .sort(filterObj)
+        .populate({ path: 'subjects', match: { isDisabled: false } })
 }
 
 exports.detail = (req, res) => {

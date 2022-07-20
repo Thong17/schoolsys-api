@@ -26,11 +26,23 @@ const schema = mongoose.Schema(
         isDisabled: {
             type: Boolean,
             default: false
-        }
+        },
+        tags: {
+            type: String,
+        },
     },
     {
         timestamps: { createdAt: 'createdAt', updatedAt: 'updatedAt' }
     }
 )
+
+schema.pre('save', async function (next) {
+    try {
+        this.tags = `${JSON.stringify(this.name)}${this.level}${this.description}`.replace(/ /g,'')
+        next()
+    } catch (err) {
+        next(err)
+    }
+})
 
 module.exports = mongoose.model('Grade', schema)
