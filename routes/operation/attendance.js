@@ -41,7 +41,7 @@ router.post('/batch', (req, res) => {
     batch(req, res)
 })
 
-router.post('/checkInAll', security.role(privilege.role.create), (req, res) => {
+router.post('/checkInAll/:classId', security.role(privilege.role.create), (req, res) => {
     checkInAll(req, res)
 })
 

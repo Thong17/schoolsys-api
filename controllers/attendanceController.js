@@ -5,6 +5,7 @@ const { failureMsg } = require('../constants/responseMsg')
 const { extractJoiErrors, readExcel } = require('../helpers/utils')
 const { checkInValidation } = require('../middleware/validations/attendanceValidation')
 const StudentAcademy = require('../models/StudentAcademy')
+const Class = require('../models/Class')
 
 exports.index = (req, res) => {
     const classId = req.query.classId
@@ -21,18 +22,23 @@ exports.detail = (req, res) => {
     })
 }
 
-exports.checkIn = async (req, res) => {
+exports.checkIn = (req, res) => {
     const body = req.body
     const { error } = checkInValidation.validate(body, { abortEarly: false })
     if (error) return response.failure(422, extractJoiErrors(error), res)
     
     try {
-        Attendance.create({...body, createdBy: req.user.id}, (err, attendance) => {
+        Attendance.create({...body, createdBy: req.user.id}, async (err, attendance) => {
             if (err) {
                 return response.failure(422, { msg: err.message }, res, err)
             }
 
             if (!attendance) return response.failure(422, { msg: 'No attendance checked in!' }, res, err)
+
+            const _class = await Class.findById(body.class)
+            _class.attendance = { ..._class.attendance, checkedIn: _class.attendance?.checkedIn + 1  }
+            _class.save()
+ 
             response.success(200, { msg: 'User has checked in successfully', data: attendance }, res)
         })
     } catch (err) {
@@ -42,7 +48,7 @@ exports.checkIn = async (req, res) => {
 
 exports.checkOut = (req, res) => {
     try {
-        Attendance.findByIdAndUpdate(req.params.id, { checkedOut: Date.now() }, { new: true }, (err, attendance) => {
+        Attendance.findByIdAndUpdate(req.params.id, { checkedOut: Date.now() }, { new: true }, async (err, attendance) => {
             if (err) {
                 switch (err.code) {
                     default:
@@ -51,6 +57,11 @@ exports.checkOut = (req, res) => {
             }
 
             if (!attendance) return response.failure(422, { msg: 'No attendance checked out!' }, res, err)
+
+            const _class = await Class.findById(attendance.class)
+            _class.attendance = { ..._class.attendance, checkedOut: _class.attendance?.checkedOut + 1  }
+            _class.save()
+
             response.success(200, { msg: 'User has checked out successfully', data: attendance }, res)
         })
     } catch (err) {
@@ -60,13 +71,17 @@ exports.checkOut = (req, res) => {
 
 exports.reset = (req, res) => {
     try {
-        Attendance.findByIdAndUpdate(req.params.id, { isReset: true }, { new: true }, (err, attendance) => {
+        Attendance.findByIdAndUpdate(req.params.id, { isReset: true }, { new: true }, async (err, attendance) => {
             if (err) {
                 switch (err.code) {
                     default:
                         return response.failure(422, { msg: err.message }, res, err)
                 }
             }
+
+            const _class = await Class.findById(attendance.class)
+            _class.attendance = { checkedOut: _class.attendance?.checkedOut - 1, checkedIn: _class.attendance?.checkedIn - 1 }
+            _class.save()
 
             if (!attendance) return response.failure(422, { msg: 'No attendance reset out!' }, res, err)
             response.success(200, { msg: 'User has reset out successfully', data: attendance }, res)
@@ -155,9 +170,13 @@ exports.batch = async (req, res) => {
 exports.checkInAll = async (req, res) => {
     try {
         const attendances = req.body
-
+        const classId = req.params.classId
         Attendance.insertMany(attendances)
-            .then(data => {
+            .then(async data => {
+                const _class = await Class.findById(classId)
+                _class.attendance = { ..._class.attendance, checkedIn: _class.attendance?.checkedIn + data.length  }
+                _class.save()
+
                 response.success(200, { msg: `${data.length} ${data.length > 1 ? 'students' : 'student'} has been checked in`, data }, res)
             })
             .catch(err => {
@@ -170,8 +189,13 @@ exports.checkInAll = async (req, res) => {
 
 exports.checkOutAll = async (req, res) => {
     try {
-        Attendance.updateMany({ class: req.params.classId, isReset: false, checkedOut: null }, { checkedOut: Date.now() })
-            .then(data => {
+        const classId = req.params.classId
+        Attendance.updateMany({ class: classId, isReset: false, checkedOut: null }, { checkedOut: Date.now() })
+            .then(async data => {
+                const _class = await Class.findById(classId)
+                _class.attendance = { ..._class.attendance, checkedOut: _class.attendance?.checkedOut + data.modifiedCount  }
+                _class.save()
+
                 response.success(200, { msg: `${data.modifiedCount} ${data.modifiedCount > 1 ? 'students' : 'student'} has been checked out` }, res)
             })
             .catch(err => {
@@ -184,8 +208,15 @@ exports.checkOutAll = async (req, res) => {
 
 exports.resetAll = async (req, res) => {
     try {
-        Attendance.updateMany({ class: req.params.classId, isReset: false }, { isReset: true })
-            .then(data => {
+        const classId = req.params.classId
+        Attendance.updateMany({ class: classId, isReset: false }, { isReset: true })
+            .then(async data => {
+                const _class = await Class.findById(classId)
+                _class.attendance = {
+                    checkedIn: 0,
+                    checkedOut: 0
+                }
+                _class.save()
                 response.success(200, { msg: `${data.modifiedCount} ${data.modifiedCount > 1 ? 'students' : 'student'} has been reset` }, res)
             })
             .catch(err => {

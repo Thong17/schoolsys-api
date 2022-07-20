@@ -53,7 +53,14 @@ const schema = mongoose.Schema(
         startedAt: { 
             type: Date,
             default: Date.now
-        }
+        },
+        attendance: {
+            type: Object,
+            default: {
+                checkedIn: 0,
+                checkedOut: 0
+            }
+        },
     },
     {
         timestamps: { createdAt: 'createdAt', updatedAt: 'updatedAt' }
