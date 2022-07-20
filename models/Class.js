@@ -61,11 +61,23 @@ const schema = mongoose.Schema(
                 checkedOut: 0
             }
         },
+        tags: {
+            type: String,
+        },
     },
     {
         timestamps: { createdAt: 'createdAt', updatedAt: 'updatedAt' }
     }
 )
+
+schema.pre('save', async function (next) {
+    try {
+        this.tags = `${JSON.stringify(this.name)}${this.room}${this.schedule}${this.totalApplied}${this.description}${this.startedAt}`.replace(/ /g,'')
+        next()
+    } catch (err) {
+        next(err)
+    }
+})
 
 schema.post('find', async function (data) {
     for (const _class in data) {

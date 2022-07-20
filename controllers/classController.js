@@ -9,10 +9,30 @@ const { extractJoiErrors, readExcel } = require('../helpers/utils')
 const { classValidation } = require('../middleware/validations/classValidation')
 
 exports.index = (req, res) => {
-    Class.find({ isDisabled: false }, async (err, classes) => {
+    const limit = parseInt(req.query.limit) || 100
+    const page = parseInt(req.query.page) || 0
+    const search = req.query.search
+    const field = req.query.field || 'tags'
+    const filter = req.query.filter || 'createdAt'
+    const sort = req.query.sort || 'asc'
+
+    let filterObj = { [filter]: sort }
+    let query = {}
+    if (search) {
+        query[field] = {
+            $regex: new RegExp(search, 'i')
+        }
+    }
+
+    Class.find({ isDisabled: false, ...query }, async (err, classes) => {
         if (err) return response.failure(422, { msg: failureMsg.trouble }, res, err)
-        return response.success(200, { data: classes }, res)
-    }).populate({ path: 'students', match: { isDisabled: false } }).populate('grade')
+
+        const totalCount = await Class.count({ isDisabled: false })
+        return response.success(200, { data: classes, length: totalCount }, res)
+    })
+        .skip(page * limit).limit(limit)
+        .sort(filterObj)
+        .populate({ path: 'students', match: { isDisabled: false } }).populate('grade')
 }
 
 exports.detail = (req, res) => {
