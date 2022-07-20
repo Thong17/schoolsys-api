@@ -73,7 +73,10 @@ const schema = mongoose.Schema(
         isDisabled: {
             type: Boolean,
             default: false
-        }
+        },
+        tags: {
+            type: String,
+        },
     },
     {
         timestamps: { createdAt: 'createdAt', updatedAt: 'updatedAt' }
@@ -82,6 +85,7 @@ const schema = mongoose.Schema(
 
 schema.pre('save', async function (next) {
     try {
+        this.tags = `${this.lastName}${this.firstName}${this.ref}${this.gender}${this.placeOfBirth}${this.nationality}${this.address}${this.contact}`.replace(/ /g,'')
         if (this.profile) {
             await Image.findOneAndUpdate({ _id: this.profile }, { isActive: false })
         }

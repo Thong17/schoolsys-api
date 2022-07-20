@@ -8,10 +8,29 @@ const StudentApplication = require('../models/StudentApplication')
 const StudentHealth = require('../models/StudentHealth')
 
 exports.index = (req, res) => {
-    Student.find({ isDisabled: false }, (err, students) => {
+    const limit = parseInt(req.query.limit) || 100
+    const page = parseInt(req.query.page) || 0
+    const search = req.query.search
+    const field = req.query.field || 'tags'
+    const filter = req.query.filter || 'createdAt'
+    const sort = req.query.sort || 'asc'
+
+    let filterObj = { [filter]: sort }
+    let query = {}
+    if (search) {
+        query[field] = {
+            $regex: new RegExp(search, 'i')
+        }
+    }
+
+    Student.find({ isDisabled: false, ...query }, async (err, students) => {
         if (err) return response.failure(422, { msg: failureMsg.trouble }, res, err)
-        return response.success(200, { data: students }, res)
-    })
+
+        const totalCount = await Student.count({ isDisabled: false })
+        return response.success(200, { data: students, length: totalCount }, res)
+    })  
+        .skip(page * limit).limit(limit)
+        .sort(filterObj)
         .populate({ path: 'profile', select: ['filename'] })
         .populate({ path: 'application', select: ['appliedClass'], populate: { path: 'appliedClass' }})
         .populate({ path: 'currentAcademy', populate: { path: 'class' }})
