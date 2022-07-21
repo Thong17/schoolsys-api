@@ -6,7 +6,7 @@ const { extractJoiErrors, readExcel, encryptPassword } = require('../helpers/uti
 const { createTeacherValidation } = require('../middleware/validations/teacherValidation')
 
 exports.index = (req, res) => {
-    const limit = parseInt(req.query.limit) || 100
+    const limit = parseInt(req.query.limit) || 10
     const page = parseInt(req.query.page) || 0
     const search = req.query.search
     const field = req.query.field || 'tags'

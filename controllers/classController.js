@@ -9,7 +9,7 @@ const { extractJoiErrors, readExcel } = require('../helpers/utils')
 const { classValidation } = require('../middleware/validations/classValidation')
 
 exports.index = (req, res) => {
-    const limit = parseInt(req.query.limit) || 100
+    const limit = parseInt(req.query.limit) || 10
     const page = parseInt(req.query.page) || 0
     const search = req.query.search
     const field = req.query.field || 'tags'
@@ -46,6 +46,7 @@ exports.create = async (req, res) => {
     const body = req.body
     const { error } = classValidation.validate(body, { abortEarly: false })
     if (error) return response.failure(422, extractJoiErrors(error), res)
+    if (body.monitor === '') body.monitor = null
     
     try {
         Class.create({...body, createdBy: req.user.id}, (err, _class) => {

@@ -5,7 +5,7 @@ const { extractJoiErrors, readExcel } = require('../helpers/utils')
 const { createRoleValidation } = require('../middleware/validations/roleValidation')
 
 exports.index = async (req, res) => {
-    const limit = parseInt(req.query.limit) || 100
+    const limit = parseInt(req.query.limit) || 10
     const page = parseInt(req.query.page) || 0
     const search = req.query.search
     const field = req.query.field || 'tags'
