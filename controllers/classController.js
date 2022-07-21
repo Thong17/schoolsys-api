@@ -35,6 +35,13 @@ exports.index = (req, res) => {
         .populate({ path: 'students', match: { isDisabled: false } }).populate('grade')
 }
 
+exports.list = async (req, res) => {
+    Class.find({ isDisabled: false }, (err, classes) => {
+        if (err) return response.failure(422, { msg: failureMsg.trouble }, res, err)
+        return response.success(200, { data: classes }, res)
+    }).select('name')
+}
+
 exports.detail = (req, res) => {
     Class.findById(req.params.id, (err, _class) => {
         if (err) return response.failure(422, { msg: failureMsg.trouble }, res, err)

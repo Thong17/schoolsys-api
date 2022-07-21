@@ -32,6 +32,13 @@ exports.index = (req, res) => {
         .populate('profile')
 }
 
+exports.list = async (req, res) => {
+    Teacher.find({ isDisabled: false }, (err, teachers) => {
+        if (err) return response.failure(422, { msg: failureMsg.trouble }, res, err)
+        return response.success(200, { data: teachers }, res)
+    }).select('lastName firstName')
+}
+
 exports.detail = (req, res) => {
     Teacher.findById(req.params.id, (err, teacher) => {
         if (err) return response.failure(422, { msg: failureMsg.trouble }, res, err)

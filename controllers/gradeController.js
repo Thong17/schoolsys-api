@@ -31,6 +31,13 @@ exports.index = (req, res) => {
         .populate({ path: 'subjects', match: { isDisabled: false } })
 }
 
+exports.list = async (req, res) => {
+    Grade.find({ isDisabled: false }, (err, grades) => {
+        if (err) return response.failure(422, { msg: failureMsg.trouble }, res, err)
+        return response.success(200, { data: grades }, res)
+    }).select('name')
+}
+
 exports.detail = (req, res) => {
     Grade.findById(req.params.id, (err, grade) => {
         if (err) return response.failure(422, { msg: failureMsg.trouble }, res, err)

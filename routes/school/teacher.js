@@ -3,11 +3,15 @@ const multer = require('multer')
 const upload = multer()
 const security = require('../../middleware/security')
 const { privilege } = require('../../constants/roleMap')
-const { index, detail, create, disable, update, batch, _import } = require('../../controllers/teacherController')
+const { index, list, detail, create, disable, update, batch, _import } = require('../../controllers/teacherController')
 
 
 router.get('/', security.role(privilege.user.list), (req, res) => {
     index(req, res)
+})
+
+router.get('/list', security.role(privilege.role.list), (req, res) => {
+    list(req, res)
 })
 
 router.get('/detail/:id', security.role(privilege.user.detail), (req, res) => {

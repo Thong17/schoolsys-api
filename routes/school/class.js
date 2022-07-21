@@ -1,12 +1,16 @@
 const multer = require('multer')
 const upload = multer()
 const router = require('express').Router()
-const { index, detail, create, update, batch, _import, removeStudent, rejectApplied, acceptApplied, listStudent, listSubject, graduate, enable, _delete } = require('../../controllers/classController')
+const { index, list, detail, create, update, batch, _import, removeStudent, rejectApplied, acceptApplied, listStudent, listSubject, graduate, enable, _delete } = require('../../controllers/classController')
 const security = require('../../middleware/security')
 const { privilege } = require('../../constants/roleMap')
 
 router.get('/', security.role(privilege.role.list), (req, res) => {
     index(req, res)
+})
+
+router.get('/list', security.role(privilege.role.list), (req, res) => {
+    list(req, res)
 })
 
 router.get('/detail/:id', security.role(privilege.role.detail), (req, res) => {
