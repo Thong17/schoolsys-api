@@ -25,6 +25,12 @@ const schema = mongoose.Schema(
             type: Boolean,
             default: false
         },
+        permissionType: {
+            type: String
+        },
+        description: {
+            type: String
+        },
     },
     {
         timestamps: { createdAt: 'createdAt', updatedAt: 'updatedAt' }

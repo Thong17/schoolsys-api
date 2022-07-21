@@ -3,7 +3,7 @@ const Attendance = require('../models/Attendance')
 const Student = require('../models/Student')
 const { failureMsg } = require('../constants/responseMsg')
 const { extractJoiErrors, readExcel } = require('../helpers/utils')
-const { checkInValidation } = require('../middleware/validations/attendanceValidation')
+const { checkInValidation, permissionValidation } = require('../middleware/validations/attendanceValidation')
 const StudentAcademy = require('../models/StudentAcademy')
 const Class = require('../models/Class')
 
@@ -40,6 +40,28 @@ exports.checkIn = (req, res) => {
             _class.save()
  
             response.success(200, { msg: 'User has checked in successfully', data: attendance }, res)
+        })
+    } catch (err) {
+        return response.failure(422, { msg: failureMsg.trouble }, res, err)
+    }
+}
+
+exports.permission = async (req, res) => {
+    const body = req.body
+    const { error } = permissionValidation.validate(body, { abortEarly: false })
+    if (error) return response.failure(422, extractJoiErrors(error), res)
+    
+    try {
+        const attendanceId = body.attendance
+        if (attendanceId) {
+            await Attendance.findByIdAndUpdate(attendanceId, { checkedOut: Date.now() })
+            delete body.attendance
+        }
+        Attendance.create({...body, createdBy: req.user.id}, async (err, attendance) => {
+            if (err) return response.failure(422, { msg: err.message }, res, err)
+            if (!attendance) return response.failure(422, { msg: 'No permission added!' }, res, err)
+ 
+            response.success(200, { msg: 'Permission has added successfully', data: attendance }, res)
         })
     } catch (err) {
         return response.failure(422, { msg: failureMsg.trouble }, res, err)

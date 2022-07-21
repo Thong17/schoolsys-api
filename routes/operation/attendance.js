@@ -1,7 +1,7 @@
 const multer = require('multer')
 const upload = multer()
 const router = require('express').Router()
-const { index, detail, checkIn, disable, checkOut, batch, _import, _delete, reset, checkInAll, checkOutAll, resetAll } = require('../../controllers/attendanceController')
+const { index, detail, checkIn, disable, checkOut, permission, batch, _import, _delete, reset, checkInAll, checkOutAll, resetAll } = require('../../controllers/attendanceController')
 const security = require('../../middleware/security')
 const { privilege } = require('../../constants/roleMap')
 
@@ -15,6 +15,10 @@ router.get('/detail/:id', security.role(privilege.role.detail), (req, res) => {
 
 router.post('/checkIn', security.role(privilege.role.create), (req, res) => {
     checkIn(req, res)
+})
+
+router.post('/permission', security.role(privilege.role.create), (req, res) => {
+    permission(req, res)
 })
 
 router.put('/checkOut/:id', security.role(privilege.role.update), (req, res) => {
