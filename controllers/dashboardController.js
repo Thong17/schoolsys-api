@@ -27,11 +27,11 @@ exports.operation = async (req, res) => {
             }
             checkedIn.push({
                 ...obj,
-                percentage: cl.attendance?.checkedIn / totalStudent
+                checkedIn: cl.attendance?.checkedIn
             })
             checkedOut.push({
                 ...obj,
-                percentage: cl.attendance?.checkedOut / totalStudent
+                checkedOut: cl.attendance?.checkedOut
             })
         })
 

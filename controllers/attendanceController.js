@@ -60,6 +60,10 @@ exports.permission = async (req, res) => {
         Attendance.create({...body, createdBy: req.user.id}, async (err, attendance) => {
             if (err) return response.failure(422, { msg: err.message }, res, err)
             if (!attendance) return response.failure(422, { msg: 'No permission added!' }, res, err)
+
+            const _class = await Class.findById(body.class)
+            _class.attendance = { checkedIn: _class.attendance?.checkedIn + 1, checkedOut: _class.attendance?.checkedOut + 1  }
+            _class.save()
  
             response.success(200, { msg: 'Permission has added successfully', data: attendance }, res)
         })
