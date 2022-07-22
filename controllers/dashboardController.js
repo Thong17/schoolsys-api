@@ -1,10 +1,13 @@
 const response = require('../helpers/response')
-const Student = require('../models/Student')
 const Attendance = require('../models/Attendance')
 const { failureMsg } = require('../constants/responseMsg')
 const Class = require('../models/Class')
+const Grade = require('../models/Grade')
+const Teacher = require('../models/Teacher')
+const Student = require('../models/Student')
 const Role = require('../models/Role')
 const User = require('../models/User')
+const StudentApplication = require('../models/StudentApplication')
 
 exports.operation = async (req, res) => {
     try {
@@ -43,7 +46,40 @@ exports.operation = async (req, res) => {
 
 exports.school = async (req, res) => {
     try {
+        const totalClass = await Class.count({ isDisabled: false })
+        const totalGrade = await Grade.count({ isDisabled: false })
+        const totalStudent = await Student.count({ isDisabled: false })
+        const totalTeacher = await Teacher.count({ isDisabled: false })
+        const progressClass = await Class.count({ isDisabled: false, isActive: true })
+        const closedClass = await Class.count({ isDisabled: false, isActive: false })
+        const listGrade = await Grade.find({ isDisabled: false }).select('name subjects level')
+        const pendingApplication = await StudentApplication.count({ appliedClass: { $ne: null } })
 
+        const grades = []
+        listGrade.forEach((grade) => {
+            let obj = {
+                name: grade.name,
+                value: grade.subjects?.length || 0,
+                title: 'Subject',
+                detail: grade.level
+            }
+            grades.push(obj)
+        })
+
+        const classes = [
+            {
+                name: 'In Progress',
+                value: progressClass,
+                title: 'Qty',
+            },
+            {
+                name: 'Closed',
+                value: closedClass,
+                title: 'Qty',
+            }
+        ]
+
+        return response.success(200, { data: { totalClass, totalGrade, totalStudent, totalTeacher, classes, grades, pendingApplication } }, res)
     } catch (err) {
         return response.failure(422, { msg: failureMsg.trouble }, res, err)
     }
@@ -82,7 +118,7 @@ exports.admin = async (req, res) => {
                 name: role.name,
                 value: 0,
                 title: 'User',
-                detail: role.detail
+                detail: role.value
             }
             users.forEach((user) => {
                 if (user.role.equals(role.id)) userObj.value += 1
