@@ -8,6 +8,7 @@ const Student = require('../models/Student')
 const Role = require('../models/Role')
 const User = require('../models/User')
 const StudentApplication = require('../models/StudentApplication')
+const StudentAcademy = require('../models/StudentAcademy')
 
 exports.operation = async (req, res) => {
     try {
@@ -127,6 +128,56 @@ exports.admin = async (req, res) => {
         })
 
         return response.success(200, { data: { totalRole, totalUser, totalPrivilege, roles: roleData, users: userData } }, res)
+    } catch (err) {
+        return response.failure(422, { msg: failureMsg.trouble }, res, err)
+    }
+}
+
+exports.report = async (req, res) => {
+    try {
+        const { _topStudent, _topClass, _chartData } = req.query
+        let classQuery = {
+            isDisabled: false
+        }
+        if (_topClass) classQuery['grade'] = _topClass
+
+        
+        const academies = await StudentAcademy.find({ isDisabled: false }).select('student scores class').populate('class').populate('scores').populate({ path: 'student', select: { 'lastName': 1, 'firstName': 1, 'profile': 1 }, populate: { path: 'profile', select: { 'filename': 1 } } })
+        const classes = await Class.find(classQuery).select('name')
+        const studentScores = []
+        const allScores = []
+        const classScores = []
+
+        academies.forEach((academy) => {
+            let totalScore = 0
+            academy?.scores?.forEach((score) => {
+                totalScore += score.score
+            })
+            const studentObj = {
+                class: academy.class,
+                name: `${academy.student?.lastName} ${academy.student?.firstName}`,
+                profile: academy.student?.profile?.filename,
+                totalScore
+            }
+            allScores.push(studentObj)
+            if (_topStudent && !academy.class?.grade.equals(_topStudent)) return
+            studentScores.push(studentObj)
+        })
+        
+        classes.forEach((_class) => {
+            let totalScore = 0
+            allScores.forEach((student) => {
+                if (student.class?.equals(_class._id)) totalScore += student.totalScore
+            })
+            classScores.push({
+                name: _class.name,
+                totalScore
+            })
+        })
+
+        let topClass = classScores.length && classScores.reduce((a, b) => a.totalScore > b.totalScore ? a : b)
+        let topStudent = studentScores.length && studentScores.reduce((a, b) => a.totalScore > b.totalScore ? a : b)
+        return response.success(200, { data: { topStudent, topClass } }, res)
     } catch (err) {
         return response.failure(422, { msg: failureMsg.trouble }, res, err)
     }
