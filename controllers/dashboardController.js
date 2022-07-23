@@ -141,29 +141,31 @@ exports.report = async (req, res) => {
         }
         if (_topClass) classQuery['grade'] = _topClass
 
-        
-        const academies = await StudentAcademy.find({ isDisabled: false }).select('student scores class').populate('class').populate('scores').populate({ path: 'student', select: { 'lastName': 1, 'firstName': 1, 'profile': 1 }, populate: { path: 'profile', select: { 'filename': 1 } } })
+        const academies = await StudentAcademy.find({ isDisabled: false }).select('student scores class ').populate('class').populate('scores').populate({ path: 'student', select: { 'lastName': 1, 'firstName': 1, 'profile': 1, 'currentAcademy': 1 }, populate: { path: 'profile', select: { 'filename': 1 } } })
         const classes = await Class.find(classQuery).select('name')
         const studentScores = []
-        const allScores = []
+        let allScores = []
         const classScores = []
 
+        // Top Student
         academies.forEach((academy) => {
             let totalScore = 0
             academy?.scores?.forEach((score) => {
                 totalScore += score.score
             })
             const studentObj = {
-                class: academy.class,
                 name: `${academy.student?.lastName} ${academy.student?.firstName}`,
                 profile: academy.student?.profile?.filename,
                 totalScore
             }
-            allScores.push(studentObj)
+            if (!academy.student?.currentAcademy || !academy._id.equals(academy.student?.currentAcademy)) return
+            allScores.push({ ...studentObj, scores: academy?.scores, class: academy.class })
             if (_topStudent && !academy.class?.grade.equals(_topStudent)) return
             studentScores.push(studentObj)
         })
+        allScores = allScores.sort((a, b) => b.totalScore - a.totalScore)
         
+        // Top Class
         classes.forEach((_class) => {
             let totalScore = 0
             allScores.forEach((student) => {
@@ -175,9 +177,46 @@ exports.report = async (req, res) => {
             })
         })
 
+        // Chart Data
+        let chartQuery = {}
+        if (_chartData) chartQuery['_id'] = _chartData
+
+        const grade = await Grade.findOne(chartQuery).populate('subjects')
+        const chartData = {
+            subjects: [],
+            students: []
+        }
+
+        grade.subjects?.forEach((subject) => {
+            let obj = {
+                name: subject._id,
+                title: subject.name.English
+            }
+
+            allScores.forEach((student) => {
+                if (student.class?.grade.equals(_chartData)) {
+                    obj[student.name] = 0
+                    student.scores?.forEach((score) => {
+                        if (score.subject?.equals(subject._id)) {
+                            obj[student.name] = score.score
+                        }
+                    })
+                }
+            })
+            chartData.subjects.push(obj)
+        })
+
+        allScores.forEach(student => {
+            if (student.class?.grade.equals(_chartData)) {
+                chartData.students.push({ name: student.name, profile: student.profile })
+            }
+        })
+        // Top 3
+        chartData.students = chartData.students.slice(0, 3)
+        
         let topClass = classScores.length && classScores.reduce((a, b) => a.totalScore > b.totalScore ? a : b)
         let topStudent = studentScores.length && studentScores.reduce((a, b) => a.totalScore > b.totalScore ? a : b)
-        return response.success(200, { data: { topStudent, topClass } }, res)
+        return response.success(200, { data: { topStudent, topClass, chartData } }, res)
     } catch (err) {
         return response.failure(422, { msg: failureMsg.trouble }, res, err)
     }
