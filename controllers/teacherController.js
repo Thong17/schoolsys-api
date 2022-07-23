@@ -33,10 +33,11 @@ exports.index = (req, res) => {
 }
 
 exports.list = async (req, res) => {
+    const { fields } = req.query
     Teacher.find({ isDisabled: false }, (err, teachers) => {
         if (err) return response.failure(422, { msg: failureMsg.trouble }, res, err)
         return response.success(200, { data: teachers }, res)
-    }).select('lastName firstName')
+    }).select(fields || 'lastName firstName')
 }
 
 exports.detail = (req, res) => {
