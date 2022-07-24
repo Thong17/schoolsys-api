@@ -67,90 +67,138 @@ exports.privilege = {
     },
     student: {
         list: {
-            route: 'user',
+            route: 'student',
             action: 'list'
         },
         detail: {
-            route: 'user',
+            route: 'student',
             action: 'detail'
         },
         create: {
-            route: 'user',
+            route: 'student',
             action: 'create'
         },
         update: {
-            route: 'user',
+            route: 'student',
             action: 'update'
         },
         delete: {
-            route: 'user',
+            route: 'student',
             action: 'delete'
         }
     },
     teacher: {
         list: {
-            route: 'user',
+            route: 'teacher',
             action: 'list'
         },
         detail: {
-            route: 'user',
+            route: 'teacher',
             action: 'detail'
         },
         create: {
-            route: 'user',
+            route: 'teacher',
             action: 'create'
         },
         update: {
-            route: 'user',
+            route: 'teacher',
             action: 'update'
         },
         delete: {
-            route: 'user',
+            route: 'teacher',
             action: 'delete'
         }
     },
     grade: {
         list: {
-            route: 'user',
+            route: 'grade',
             action: 'list'
         },
         detail: {
-            route: 'user',
+            route: 'grade',
             action: 'detail'
         },
         create: {
-            route: 'user',
+            route: 'grade',
             action: 'create'
         },
         update: {
-            route: 'user',
+            route: 'grade',
             action: 'update'
         },
         delete: {
-            route: 'user',
+            route: 'grade',
+            action: 'delete'
+        }
+    },
+    subject: {
+        list: {
+            route: 'subject',
+            action: 'list'
+        },
+        detail: {
+            route: 'subject',
+            action: 'detail'
+        },
+        create: {
+            route: 'subject',
+            action: 'create'
+        },
+        update: {
+            route: 'subject',
+            action: 'update'
+        },
+        delete: {
+            route: 'subject',
             action: 'delete'
         }
     },
     class: {
         list: {
-            route: 'user',
+            route: 'class',
             action: 'list'
         },
         detail: {
-            route: 'user',
+            route: 'class',
             action: 'detail'
         },
         create: {
-            route: 'user',
+            route: 'class',
             action: 'create'
         },
         update: {
-            route: 'user',
+            route: 'class',
             action: 'update'
         },
         delete: {
-            route: 'user',
+            route: 'class',
             action: 'delete'
+        }
+    },
+    attendance: {
+        list: {
+            route: 'attendance',
+            action: 'list'
+        },
+        detail: {
+            route: 'attendance',
+            action: 'detail'
+        },
+        checkIn: {
+            route: 'attendance',
+            action: 'checkIn'
+        },
+        checkOut: {
+            route: 'attendance',
+            action: 'checkOut'
+        },
+        permission: {
+            route: 'attendance',
+            action: 'permission'
+        },
+        reset: {
+            route: 'attendance',
+            action: 'reset'
         }
     },
 }
