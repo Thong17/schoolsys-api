@@ -133,7 +133,7 @@ exports.admin = async (req, res) => {
     }
 }
 
-exports.report = async (req, res) => {
+exports.schoolReport = async (req, res) => {
     try {
         const { _topStudent, _topClass, _chartData } = req.query
         let classQuery = {
@@ -219,5 +219,43 @@ exports.report = async (req, res) => {
         return response.success(200, { data: { topStudent, topClass, chartData } }, res)
     } catch (err) {
         return response.failure(422, { msg: failureMsg.trouble }, res, err)
+    }
+}
+
+exports.attendanceReport = async (req, res) => {
+    const limit = parseInt(req.query.limit) || 10
+    const page = parseInt(req.query.page) || 0
+    const search = req.query.search
+    const field = req.query.field || 'tags'
+    const filter = req.query.filter || 'createdAt'
+    const sort = req.query.sort || 'asc'
+    const type = req.query.type || 'student'
+
+    let filterObj = { [filter]: sort }
+    let query = {}
+    if (search) {
+        query[field] = {
+            $regex: new RegExp(search, 'i')
+        }
+    }
+
+    const totalStudent = await Student.count({ isDisabled: false })
+    const totalTeacher = await Teacher.count({ isDisabled: false })
+
+    switch (type) {
+        case 'student':
+            const students = await Student.find({ isDisabled: false, ...query })
+                .select('ref lastName firstName gender contact authenticate')
+                .skip(page * limit).limit(limit)
+                .sort(filterObj)
+            return response.success(200, { data: { students }, length: totalStudent }, res)
+
+        case 'teacher':
+            const teachers = await Teacher.find({ isDisabled: false, ...query })
+                .select('ref lastName firstName gender contact authenticate')
+                .skip(page * limit).limit(limit)
+                .sort(filterObj)
+            return response.success(200, { data: { teachers }, length: totalTeacher }, res)
+
     }
 }
