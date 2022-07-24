@@ -1,6 +1,7 @@
 const response = require('../helpers/response')
 const Attendance = require('../models/Attendance')
 const Student = require('../models/Student')
+const Teacher = require('../models/Teacher')
 const { failureMsg } = require('../constants/responseMsg')
 const { extractJoiErrors, readExcel } = require('../helpers/utils')
 const { checkInValidation, permissionValidation } = require('../middleware/validations/attendanceValidation')
@@ -16,9 +17,45 @@ exports.index = (req, res) => {
 }
 
 exports.detail = (req, res) => {
-    Attendance.findById(req.params.id, (err, attendance) => {
+    const userId = req.params.userId
+    const { classId, type } = req.query
+    const query = { user: userId }
+    if (classId) query['class'] = classId
+
+    Attendance.find(query, async (err, attendances) => {
         if (err) return response.failure(422, { msg: failureMsg.trouble }, res, err)
-        return response.success(200, { data: attendance }, res)
+        let total = {
+            totalAL: 0,
+            totalSL: 0,
+            totalAb: 0,
+            totalPresent: 0
+        }
+        attendances.forEach((attendance) => {
+            switch (attendance.permissionType) {
+                case 'Annual Leave':
+                    total.totalAL = total.totalAL + 1
+                    break
+                case 'Sick Leave':
+                    total.totalSL = total.totalSL + 1
+                    break
+                case 'Absent':
+                    total.totalAb = total.totalAb + 1
+                    break
+                default:
+                    total.totalPresent = total.totalPresent + 1
+                    break
+            }
+        })
+
+        switch (type) {
+            case 'teacher':
+                const teacher = await Teacher.findOne({ authenticate: userId, isDisabled: false }).select('ref lastName firstName gender contact').populate('profile', 'filename -_id')
+                return response.success(200, { data: { attendances, user: teacher, ...total } }, res)
+        
+            default:
+                const student = await Student.findOne({ authenticate: userId, isDisabled: false }).select('ref lastName firstName gender contact').populate('profile', 'filename -_id')
+                return response.success(200, { data: { attendances, user: student, ...total } }, res)
+        }
     })
 }
 

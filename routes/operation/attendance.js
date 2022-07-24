@@ -9,7 +9,7 @@ router.get('/', security.role(privilege.role.list), (req, res) => {
     index(req, res)
 })
 
-router.get('/detail/:id', security.role(privilege.role.detail), (req, res) => {
+router.get('/detail/:userId', security.role(privilege.role.detail), (req, res) => {
     detail(req, res)
 })
 
