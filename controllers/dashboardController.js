@@ -194,7 +194,7 @@ exports.report = async (req, res) => {
             }
 
             allScores.forEach((student) => {
-                if (student.class?.grade.equals(_chartData)) {
+                if (student.class?.grade.equals(_chartData || grade._id)) {
                     obj[student.name] = 0
                     student.scores?.forEach((score) => {
                         if (score.subject?.equals(subject._id)) {
@@ -207,7 +207,7 @@ exports.report = async (req, res) => {
         })
 
         allScores.forEach(student => {
-            if (student.class?.grade.equals(_chartData)) {
+            if (student.class?.grade.equals(_chartData || grade._id)) {
                 chartData.students.push({ name: student.name, profile: student.profile })
             }
         })

@@ -54,6 +54,7 @@ exports.create = async (req, res) => {
     const { error } = classValidation.validate(body, { abortEarly: false })
     if (error) return response.failure(422, extractJoiErrors(error), res)
     if (body.monitor === '') body.monitor = null
+    if (body.teacher === '') body.teacher = null
     
     try {
         Class.create({...body, createdBy: req.user.id}, (err, _class) => {
