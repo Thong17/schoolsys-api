@@ -8,7 +8,7 @@ const { createTeacherValidation } = require('../middleware/validations/teacherVa
 exports.index = (req, res) => {
     const limit = parseInt(req.query.limit) || 10
     const page = parseInt(req.query.page) || 0
-    const search = req.query.search
+    const search = req.query.search?.replace(/ /g,'')
     const field = req.query.field || 'tags'
     const filter = req.query.filter || 'createdAt'
     const sort = req.query.sort || 'asc'

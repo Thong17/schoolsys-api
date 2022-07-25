@@ -10,7 +10,7 @@ const StudentHealth = require('../models/StudentHealth')
 exports.index = (req, res) => {
     const limit = parseInt(req.query.limit) || 10
     const page = parseInt(req.query.page) || 0
-    const search = req.query.search
+    const search = req.query.search?.replace(/ /g,'')
     const field = req.query.field || 'tags'
     const filter = req.query.filter || 'createdAt'
     const sort = req.query.sort || 'asc'
@@ -150,12 +150,7 @@ exports.updateFamily = (req, res) => {
 
     try {
         StudentFamily.findByIdAndUpdate(req.params.id, body, (err, student) => {
-            if (err) {
-                switch (err.code) {
-                    default:
-                        return response.failure(422, { msg: err.message }, res, err)
-                }
-            }
+            if (err)  return response.failure(422, { msg: err.message }, res, err)
 
             if (!student) return response.failure(422, { msg: 'No student updated!' }, res, err)
             response.success(200, { msg: 'Student has updated successfully', data: student }, res)
@@ -172,12 +167,7 @@ exports.updateApplication = (req, res) => {
 
     try {
         StudentApplication.findByIdAndUpdate(req.params.id, body, (err, student) => {
-            if (err) {
-                switch (err.code) {
-                    default:
-                        return response.failure(422, { msg: err.message }, res, err)
-                }
-            }
+            if (err) return response.failure(422, { msg: err.message }, res, err)
 
             if (!student) return response.failure(422, { msg: 'No student updated!' }, res, err)
             response.success(200, { msg: 'Student has updated successfully', data: student }, res)
@@ -194,12 +184,7 @@ exports.updateHealth = (req, res) => {
 
     try {
         StudentHealth.findByIdAndUpdate(req.params.id, body, (err, student) => {
-            if (err) {
-                switch (err.code) {
-                    default:
-                        return response.failure(422, { msg: err.message }, res, err)
-                }
-            }
+            if (err)  return response.failure(422, { msg: err.message }, res, err)
 
             if (!student) return response.failure(422, { msg: 'No student updated!' }, res, err)
             response.success(200, { msg: 'Student has updated successfully', data: student }, res)
