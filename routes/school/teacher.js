@@ -10,23 +10,23 @@ router.get('/', security.role(privilege.user.list), (req, res) => {
     index(req, res)
 })
 
-router.get('/list', security.role(privilege.role.list), (req, res) => {
+router.get('/list', (req, res) => {
     list(req, res)
 })
 
-router.get('/detail/:id', security.role(privilege.user.detail), (req, res) => {
+router.get('/detail/:id', security.role(privilege.teacher.detail), (req, res) => {
     detail(req, res)
 })
 
-router.post('/create', security.role(privilege.user.create), (req, res) => {
+router.post('/create', security.role(privilege.teacher.create), (req, res) => {
     create(req, res)
 })
 
-router.put('/update/:id', security.role(privilege.user.update), (req, res) => {
+router.put('/update/:id', security.role(privilege.teacher.update), (req, res) => {
     update(req, res)
 })
 
-router.delete('/disable/:id', security.role(privilege.user.delete), (req, res) => {
+router.delete('/disable/:id', security.role(privilege.teacher.delete), (req, res) => {
     disable(req, res)
 })
 

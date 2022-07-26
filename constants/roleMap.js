@@ -153,6 +153,20 @@ exports.privilege = {
             action: 'delete'
         }
     },
+    score: {
+        list: {
+            route: 'subject',
+            action: 'list'
+        },
+        create: {
+            route: 'subject',
+            action: 'create'
+        },
+        delete: {
+            route: 'subject',
+            action: 'delete'
+        }
+    },
     class: {
         list: {
             route: 'class',
@@ -173,6 +187,14 @@ exports.privilege = {
         delete: {
             route: 'class',
             action: 'delete'
+        },
+        graduate: {
+            route: 'class',
+            action: 'graduate'
+        },
+        start: {
+            route: 'class',
+            action: 'start'
         }
     },
     attendance: {
@@ -199,6 +221,10 @@ exports.privilege = {
         reset: {
             route: 'attendance',
             action: 'reset'
+        },
+        report: {
+            route: 'attendance',
+            action: 'report'
         }
     },
 }

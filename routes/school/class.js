@@ -5,27 +5,27 @@ const { index, list, detail, create, update, batch, _import, removeStudent, reje
 const security = require('../../middleware/security')
 const { privilege } = require('../../constants/roleMap')
 
-router.get('/', security.role(privilege.role.list), (req, res) => {
+router.get('/', security.role(privilege.class.list), (req, res) => {
     index(req, res)
 })
 
-router.get('/list', security.role(privilege.role.list), (req, res) => {
+router.get('/list', security.role(privilege.class.list), (req, res) => {
     list(req, res)
 })
 
-router.get('/detail/:id', security.role(privilege.role.detail), (req, res) => {
+router.get('/detail/:id', security.role(privilege.class.detail), (req, res) => {
     detail(req, res)
 })
 
-router.post('/create', security.role(privilege.role.create), (req, res) => {
+router.post('/create', security.role(privilege.class.create), (req, res) => {
     create(req, res)
 })
 
-router.put('/update/:id', security.role(privilege.role.update), (req, res) => {
+router.put('/update/:id', security.role(privilege.class.update), (req, res) => {
     update(req, res)
 })
 
-router.delete('/delete/:id', security.role(privilege.role.delete), (req, res) => {
+router.delete('/delete/:id', security.role(privilege.class.delete), (req, res) => {
     _delete(req, res)
 })
 
@@ -49,19 +49,19 @@ router.delete('/student/remove/:id', (req, res) => {
     removeStudent(req, res)
 })
 
-router.get('/:id/student', security.role(privilege.role.detail), (req, res) => {
+router.get('/:id/student', security.role(privilege.class.detail), (req, res) => {
     listStudent(req, res)
 })
 
-router.get('/:id/subject', security.role(privilege.role.detail), (req, res) => {
+router.get('/:id/subject', security.role(privilege.class.detail), (req, res) => {
     listSubject(req, res)
 })
 
-router.put('/graduate/:id', security.role(privilege.role.detail), (req, res) => {
+router.put('/graduate/:id', security.role(privilege.class.update), (req, res) => {
     graduate(req, res)
 })
 
-router.put('/enable/:id', security.role(privilege.role.detail), (req, res) => {
+router.put('/enable/:id', security.role(privilege.class.update), (req, res) => {
     enable(req, res)
 })
 

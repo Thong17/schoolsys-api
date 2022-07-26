@@ -3,7 +3,7 @@ const { operation } = require('../../controllers/dashboardController')
 const security = require('../../middleware/security')
 const { privilege } = require('../../constants/roleMap')
 
-router.get('/', security.role(privilege.role.list), (req, res) => {
+router.get('/', (req, res) => {
     operation(req, res)
 })
 
