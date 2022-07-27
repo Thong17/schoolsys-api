@@ -6,8 +6,8 @@
   "scripts": {
     "start": "node start app.js",
     "dev": "nodemon app.js",
-    "dockerBuild": "docker build -t schoolsystem/schoolsys-api .",
-    "dockerPush": "docker push schoolsystem/schoolsys-api"
+    "dockerBuild": "docker build -t schoolsystem/schoolsys-api:release-v.1.0.0 .",
+    "dockerPush": "docker push schoolsystem/schoolsys-api:release-v.1.0.0"
   },
   "author": "",
   "license": "ISC",
