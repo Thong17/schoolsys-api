@@ -1,26 +1,4 @@
 exports.privilege = {
-    admin: {
-        list: {
-            route: 'admin',
-            action: 'list'
-        },
-        detail: {
-            route: 'admin',
-            action: 'detail'
-        },
-        create: {
-            route: 'admin',
-            action: 'create'
-        },
-        update: {
-            route: 'admin',
-            action: 'update'
-        },
-        delete: {
-            route: 'admin',
-            action: 'delete'
-        }
-    },
     user: {
         list: {
             route: 'user',
@@ -153,20 +131,6 @@ exports.privilege = {
             action: 'delete'
         }
     },
-    score: {
-        list: {
-            route: 'subject',
-            action: 'list'
-        },
-        create: {
-            route: 'subject',
-            action: 'create'
-        },
-        delete: {
-            route: 'subject',
-            action: 'delete'
-        }
-    },
     class: {
         list: {
             route: 'class',
@@ -195,6 +159,16 @@ exports.privilege = {
         start: {
             route: 'class',
             action: 'start'
+        }
+    },
+    score: {
+        create: {
+            route: 'score',
+            action: 'create'
+        },
+        delete: {
+            route: 'score',
+            action: 'delete'
         }
     },
     attendance: {

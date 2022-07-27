@@ -9,7 +9,7 @@ router.get('/', security.role(privilege.class.list), (req, res) => {
     index(req, res)
 })
 
-router.get('/list', security.role(privilege.class.list), (req, res) => {
+router.get('/list', (req, res) => {
     list(req, res)
 })
 
@@ -37,31 +37,31 @@ router.post('/batch', (req, res) => {
     batch(req, res)
 })
 
-router.put('/accept/applied/:id', (req, res) => {
+router.put('/accept/applied/:id', security.role(privilege.class.update), (req, res) => {
     acceptApplied(req, res)
 })
 
-router.delete('/reject/applied/:id', (req, res) => {
+router.delete('/reject/applied/:id', security.role(privilege.class.delete), (req, res) => {
     rejectApplied(req, res)
 })
 
-router.delete('/student/remove/:id', (req, res) => {
+router.delete('/student/remove/:id', security.role(privilege.class.delete), (req, res) => {
     removeStudent(req, res)
 })
 
-router.get('/:id/student', security.role(privilege.class.detail), (req, res) => {
+router.get('/:id/student', security.role(privilege.class.list), (req, res) => {
     listStudent(req, res)
 })
 
-router.get('/:id/subject', security.role(privilege.class.detail), (req, res) => {
+router.get('/:id/subject', security.role(privilege.class.list), (req, res) => {
     listSubject(req, res)
 })
 
-router.put('/graduate/:id', security.role(privilege.class.update), (req, res) => {
+router.put('/graduate/:id', security.role(privilege.class.graduate), (req, res) => {
     graduate(req, res)
 })
 
-router.put('/enable/:id', security.role(privilege.class.update), (req, res) => {
+router.put('/enable/:id', security.role(privilege.class.start), (req, res) => {
     enable(req, res)
 })
 

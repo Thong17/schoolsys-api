@@ -6,7 +6,7 @@ const { privilege } = require('../../constants/roleMap')
 const { index, list, detail, create, disable, update, batch, _import } = require('../../controllers/teacherController')
 
 
-router.get('/', security.role(privilege.user.list), (req, res) => {
+router.get('/', security.role(privilege.teacher.list), (req, res) => {
     index(req, res)
 })
 

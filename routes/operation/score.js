@@ -5,27 +5,27 @@ const { index, detail, create, disable, update, batch, _import, _delete } = requ
 const security = require('../../middleware/security')
 const { privilege } = require('../../constants/roleMap')
 
-router.get('/', security.role(privilege.role.list), (req, res) => {
+router.get('/', (req, res) => {
     index(req, res)
 })
 
-router.get('/detail/:id', security.role(privilege.role.detail), (req, res) => {
+router.get('/detail/:id', security.role(privilege.score.detail), (req, res) => {
     detail(req, res)
 })
 
-router.post('/create', security.role(privilege.role.create), (req, res) => {
+router.post('/create', security.role(privilege.score.create), (req, res) => {
     create(req, res)
 })
 
-router.put('/update/:id', security.role(privilege.role.update), (req, res) => {
+router.put('/update/:id', security.role(privilege.score.update), (req, res) => {
     update(req, res)
 })
 
-router.delete('/disable/:id', security.role(privilege.role.delete), (req, res) => {
+router.delete('/disable/:id', security.role(privilege.score.delete), (req, res) => {
     disable(req, res)
 })
 
-router.delete('/delete/:id', security.role(privilege.role.delete), (req, res) => {
+router.delete('/delete/:id', security.role(privilege.score.delete), (req, res) => {
     _delete(req, res)
 })
 
