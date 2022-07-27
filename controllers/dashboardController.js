@@ -187,7 +187,7 @@ exports.schoolReport = async (req, res) => {
             students: []
         }
 
-        grade.subjects?.forEach((subject) => {
+        grade?.subjects?.forEach((subject) => {
             let obj = {
                 name: subject._id,
                 title: subject.name.English
