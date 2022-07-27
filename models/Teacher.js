@@ -69,7 +69,7 @@ const schema = mongoose.Schema(
 
 schema.pre('save', async function (next) {
     try {
-        this.tags = `${this.lastName}${this.firstName}${this.ref}${this.gender}${this.email}${this.address}${this.contact}${this.grade}${this.subject}`.replace(/ /g,'')
+        this.tags = `${this.lastName}${this.firstName}${this.ref}${this.gender}${this.email || ''}${this.address || ''}${this.contact || ''}${this.grade || ''}${this.subject || ''}`.replace(/ /g,'')
         if (this.profile) {
             await Image.findOneAndUpdate({ _id: this.profile }, { isActive: false })
         }
@@ -84,7 +84,7 @@ schema.post('save', async function () {
         const username = this.ref
         const user = await User.create({ 
             username,
-            password: `${username}@default`,
+            password: `${username}${process.env.DEFAULT_PASSWORD}`,
             email: this.email,
             role: '88a28069b8f93e95a08367b8'
         })

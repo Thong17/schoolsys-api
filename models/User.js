@@ -66,6 +66,10 @@ const schema = mongoose.Schema(
             type: Boolean,
             default: false
         },
+        isDefault: {
+            type: Boolean,
+            default: false
+        },
         tags: {
             type: String,
         },
@@ -77,7 +81,7 @@ const schema = mongoose.Schema(
 
 schema.pre('save', async function (next) {
     try {
-        this.tags = `${this.username}${this.email}`.replace(/ /g,'')
+        this.tags = `${this.username}${this.email || ''}`.replace(/ /g,'')
         this.password = await encryptPassword(this.password)
         next()
     } catch (err) {

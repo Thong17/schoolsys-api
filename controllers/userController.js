@@ -64,6 +64,7 @@ exports.create = (req, res) => {
 }
 
 exports.update = async (req, res) => {
+    const id = req.params.id
     const body = req.body
     const { error } = updateUserValidation.validate(body, { abortEarly: false })
     if (error) return response.failure(422, extractJoiErrors(error), res)
@@ -74,12 +75,9 @@ exports.update = async (req, res) => {
         } else {
             delete body.password
         }
-        User.findByIdAndUpdate(req.params.id, body, (err, user) => {
+        User.findByIdAndUpdate(id, body, (err, user) => {
             if (err) {
-                switch (err.code) {
-                    default:
-                        return response.failure(422, { msg: err.message }, res, err)
-                }
+                return response.failure(422, { msg: err.message }, res, err)
             }
 
             if (!user) return response.failure(422, { msg: 'No user updated!' }, res, err)
@@ -90,9 +88,13 @@ exports.update = async (req, res) => {
     }
 }
 
-exports.disable = (req, res) => {
+exports.disable = async (req, res) => {
+    const id = req.params.id
     try {
-        User.findByIdAndUpdate(req.params.id, { isDisabled: true }, (err, user) => {
+        const user = await User.findById(id)
+        if (user?.isDefault) return response.failure(422, { msg: 'Default user cannot be delete' }, res)
+
+        User.findByIdAndUpdate(id, { isDisabled: true }, (err, user) => {
             if (err) {
                 switch (err.code) {
                     default:

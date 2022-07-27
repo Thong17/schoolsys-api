@@ -72,7 +72,7 @@ const schema = mongoose.Schema(
 
 schema.pre('save', async function (next) {
     try {
-        this.tags = `${JSON.stringify(this.name)}${this.room}${this.schedule}${this.description}${this.startedAt}`.replace(/ /g,'')
+        this.tags = `${JSON.stringify(this.name)}${this.room || ''}${this.schedule}${this.description || ''}${this.startedAt}`.replace(/ /g,'')
         next()
     } catch (err) {
         next(err)
