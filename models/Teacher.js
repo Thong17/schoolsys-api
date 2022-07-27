@@ -69,7 +69,7 @@ const schema = mongoose.Schema(
 
 schema.pre('save', async function (next) {
     try {
-        this.tags = `${this.lastName}${this.firstName}${this.ref}${this.gender}${this.birthDate}${this.email}${this.address}${this.contact}${this.grade}${this.subject}`.replace(/ /g,'')
+        this.tags = `${this.lastName}${this.firstName}${this.ref}${this.gender}${this.email}${this.address}${this.contact}${this.grade}${this.subject}`.replace(/ /g,'')
         if (this.profile) {
             await Image.findOneAndUpdate({ _id: this.profile }, { isActive: false })
         }
