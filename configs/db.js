@@ -6,8 +6,8 @@ mongoose.connect(process.env.DATABASE_URL, {
     useNewUrlParser: true,
 })
 .then(async () => {
-    const totalRole = await Role.count({ isDisabled: false })
-    if (totalRole > 0) return
+    const totalUser = await User.count()
+    if (totalUser > 0) return
 
     const ObjectId = mongoose.Types.ObjectId
     const { preRole } = require('../constants/roleMap')
