@@ -198,7 +198,7 @@ exports.schoolReport = async (req, res) => {
                     obj[student.name] = 0
                     student.scores?.forEach((score) => {
                         if (score.subject?.equals(subject._id)) {
-                            obj[student.name] = score.score
+                            obj[student.name] = obj[student.name] + score.score
                         }
                     })
                 }
