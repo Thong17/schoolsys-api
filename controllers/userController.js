@@ -36,10 +36,10 @@ exports.index = (req, res) => {
 exports.detail = (req, res) => {
     const id = req.params.id
     User.findById(id, async (err, user) => {
-        let profile = {}
+        let profile = null
         switch (user.segment) {
             case 'Student':
-                const student = await Student.findOne({ authenticate: id })
+                const student = await Student.findOne({ authenticate: id }).populate({ path: 'currentAcademy', populate: 'class' })
                 profile = student?.toObject({ getters: true })
                 break
             case 'Teacher':
