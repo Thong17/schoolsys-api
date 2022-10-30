@@ -34,6 +34,10 @@ const schema = mongoose.Schema(
                 message: 'Strong password is required!'
             },
         },
+        segment: {
+            type: String,
+            default: 'User'
+        },
         role: {
             type: mongoose.Schema.ObjectId,
             ref: 'Role',

@@ -4,6 +4,7 @@ const User = require('../models/User')
 const { failureMsg } = require('../constants/responseMsg')
 const { extractJoiErrors, readExcel, encryptPassword, comparePassword } = require('../helpers/utils')
 const { createUserValidation, updateUserValidation } = require('../middleware/validations/userValidation')
+const Student = require('../models/Student')
 
 exports.index = (req, res) => {
     const limit = parseInt(req.query.limit) || 10
@@ -33,9 +34,24 @@ exports.index = (req, res) => {
 }
 
 exports.detail = (req, res) => {
-    User.findById(req.params.id, (err, user) => {
+    const id = req.params.id
+    User.findById(id, async (err, user) => {
+        let profile = {}
+        switch (user.segment) {
+            case 'Student':
+                const student = await Student.findOne({ authenticate: id })
+                profile = student?.toObject({ getters: true })
+                break
+            case 'Teacher':
+                const teacher = await Teacher.findOne({ authenticate: id })
+                profile = teacher?.toObject({ getters: true })
+                break
+        
+            default:
+                break
+        }
         if (err) return response.failure(422, { msg: failureMsg.trouble }, res, err)
-        return response.success(200, { data: user }, res)
+        return response.success(200, { data: { user, profile } }, res)
     })
 }
 

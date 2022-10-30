@@ -1,9 +1,13 @@
 const router = require('express').Router()
-const { profile, changeTheme, changeLanguage, passwordUpdate } = require('../../controllers/userController')
+const { profile, detail, changeTheme, changeLanguage, passwordUpdate } = require('../../controllers/userController')
 const security = require('../../middleware/security')
 
 router.get('/profile', (req, res) => {
     profile(req, res)
+})
+
+router.get('/detail/:id', (req, res) => {
+    detail(req, res)
 })
 
 router.post('/theme/change', (req, res) => {

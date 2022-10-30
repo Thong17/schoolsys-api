@@ -99,6 +99,7 @@ schema.post('save', async function () {
     if (!this.authenticate) {
         const username = this.ref
         const user = await User.create({
+            segment: 'Student',
             username,
             password: `${username}${process.env.DEFAULT_PASSWORD}`,
             email: this.email,
