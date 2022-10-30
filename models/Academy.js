@@ -13,33 +13,27 @@ const schema = mongoose.Schema(
             type: String,
             required: [true, 'Schedule is required!']
         },
-        students: [{
-            type: mongoose.Schema.ObjectId,
-            ref: 'Student'
-        }],
-        subjects: [{
-            type: mongoose.Schema.ObjectId,
-            ref: 'Subject'
-        }],
-        scores: [{
-            type: mongoose.Schema.ObjectId,
-            ref: 'Score'
-        }],
+        students: {
+            type: Array
+        },
+        subjects: {
+            type: Array
+        },
+        scores: {
+            type: Array
+        },
         grade: {
             type: Object,
             required: [true, 'Name is required!']
         },
         createdBy: {
-            type: mongoose.Schema.ObjectId,
-            ref: 'User'
+            type: String
         },
         teacher: {
-            type: mongoose.Schema.ObjectId,
-            ref: 'Teacher'
+            type: Object
         },
         monitor: {
-            type: mongoose.Schema.ObjectId,
-            ref: 'Student'
+            type: Object
         },
         startedAt: {
             type: Date

@@ -7,6 +7,7 @@ const Teacher = require('../models/Teacher')
 const Student = require('../models/Student')
 const Role = require('../models/Role')
 const User = require('../models/User')
+const Academy = require('../models/Academy')
 const StudentApplication = require('../models/StudentApplication')
 const StudentAcademy = require('../models/StudentAcademy')
 
@@ -258,4 +259,34 @@ exports.attendanceReport = async (req, res) => {
             return response.success(200, { data: { teachers }, length: totalTeacher }, res)
 
     }
+}
+
+exports.academyReport = async (req, res) => {
+    const limit = parseInt(req.query.limit) || 10
+    const page = parseInt(req.query.page) || 0
+    const search = req.query.search?.replace(/ /g,'')
+    const field = req.query.field || 'tags'
+    const filter = req.query.filter || 'createdAt'
+    const sort = req.query.sort || 'asc'
+
+    let filterObj = { [filter]: sort }
+    let query = {}
+    if (search) {
+        query[field] = {
+            $regex: new RegExp(search, 'i')
+        }
+    }
+
+    const totalAcademy = await Academy.count({ isDisabled: false })
+
+    const academies = await Academy.find({ isDisabled: false, ...query })
+        .skip(page * limit).limit(limit)
+        .sort(filterObj)
+    return response.success(200, { data: academies, length: totalAcademy }, res)
+}
+
+exports.academyDetail = async (req, res) => {
+    const id = req.params.id
+    const academy = await Academy.findById(id).populate('teacher monitor scores.teacher')
+    return response.success(200, { data: academy }, res)
 }

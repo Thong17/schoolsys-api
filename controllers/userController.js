@@ -2,8 +2,9 @@ const response = require('../helpers/response')
 const Config = require('../models/Config')
 const User = require('../models/User')
 const { failureMsg } = require('../constants/responseMsg')
-const { extractJoiErrors, readExcel, encryptPassword } = require('../helpers/utils')
+const { extractJoiErrors, readExcel, encryptPassword, comparePassword } = require('../helpers/utils')
 const { createUserValidation, updateUserValidation } = require('../middleware/validations/userValidation')
+const Student = require('../models/Student')
 
 exports.index = (req, res) => {
     const limit = parseInt(req.query.limit) || 10
@@ -33,9 +34,24 @@ exports.index = (req, res) => {
 }
 
 exports.detail = (req, res) => {
-    User.findById(req.params.id, (err, user) => {
+    const id = req.params.id
+    User.findById(id, async (err, user) => {
+        let profile = null
+        switch (user.segment) {
+            case 'Student':
+                const student = await Student.findOne({ authenticate: id }).populate({ path: 'currentAcademy', populate: 'class' })
+                profile = student?.toObject({ getters: true })
+                break
+            case 'Teacher':
+                const teacher = await Teacher.findOne({ authenticate: id })
+                profile = teacher?.toObject({ getters: true })
+                break
+        
+            default:
+                break
+        }
         if (err) return response.failure(422, { msg: failureMsg.trouble }, res, err)
-        return response.success(200, { data: user }, res)
+        return response.success(200, { data: { user, profile } }, res)
     })
 }
 
@@ -60,6 +76,26 @@ exports.create = (req, res) => {
         })
     } catch (err) {
         return response.failure(422, { msg: failureMsg.trouble }, res, err)
+    }
+}
+
+exports.passwordUpdate = async (req, res) => {
+    try {
+        const { current_password, new_password } = req.body
+        const id = req.params.id
+        const user = await User.findById(id)
+        comparePassword(current_password, user.password)
+            .then(async isMatch => {
+                if (!isMatch) return response.failure(422, { msg: 'Password is incorrect' }, res)
+                const password = await encryptPassword(new_password)
+                await User.findByIdAndUpdate(id, { password })
+                return response.success(200, { msg: 'Password has updated successfully' }, res)
+            })
+            .catch(err => {
+                return response.failure(422, { msg: err.message }, res, err)
+            })
+    } catch (err) {
+        return response.failure(422, { msg: err.message }, res, err)
     }
 }
 

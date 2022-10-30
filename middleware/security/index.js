@@ -21,6 +21,11 @@ exports.hash = (req, res, next) => {
     }
 }
 
+exports.self = (req, res, next) => {
+    if (req.params?.id !== req.user?.id) return response.failure(422, { msg: 'Request is denied!' }, res)
+    next()
+}
+
 exports.auth = (req, res, next) => {
     const token = req.headers['x-access-token']
     if (!token) return response.failure(411, { msg: 'Token is required!' }, res)
