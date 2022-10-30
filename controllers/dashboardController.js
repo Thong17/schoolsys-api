@@ -284,3 +284,9 @@ exports.academyReport = async (req, res) => {
         .sort(filterObj)
     return response.success(200, { data: academies, length: totalAcademy }, res)
 }
+
+exports.academyDetail = async (req, res) => {
+    const id = req.params.id
+    const academy = await Academy.findById(id).populate('teacher monitor scores.teacher')
+    return response.success(200, { data: academy }, res)
+}

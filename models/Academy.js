@@ -30,10 +30,10 @@ const schema = mongoose.Schema(
             type: String
         },
         teacher: {
-            type: String
+            type: Object
         },
         monitor: {
-            type: String
+            type: Object
         },
         startedAt: {
             type: Date

@@ -2,7 +2,7 @@ const response = require('../helpers/response')
 const Config = require('../models/Config')
 const User = require('../models/User')
 const { failureMsg } = require('../constants/responseMsg')
-const { extractJoiErrors, readExcel, encryptPassword } = require('../helpers/utils')
+const { extractJoiErrors, readExcel, encryptPassword, comparePassword } = require('../helpers/utils')
 const { createUserValidation, updateUserValidation } = require('../middleware/validations/userValidation')
 
 exports.index = (req, res) => {
@@ -60,6 +60,26 @@ exports.create = (req, res) => {
         })
     } catch (err) {
         return response.failure(422, { msg: failureMsg.trouble }, res, err)
+    }
+}
+
+exports.passwordUpdate = async (req, res) => {
+    try {
+        const { current_password, new_password } = req.body
+        const id = req.params.id
+        const user = await User.findById(id)
+        comparePassword(current_password, user.password)
+            .then(async isMatch => {
+                if (!isMatch) return response.failure(422, { msg: 'Password is incorrect' }, res)
+                const password = await encryptPassword(new_password)
+                await User.findByIdAndUpdate(id, { password })
+                return response.success(200, { msg: 'Password has updated successfully' }, res)
+            })
+            .catch(err => {
+                return response.failure(422, { msg: err.message }, res, err)
+            })
+    } catch (err) {
+        return response.failure(422, { msg: err.message }, res, err)
     }
 }
 
