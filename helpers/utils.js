@@ -47,6 +47,69 @@ module.exports = utils = {
         const sha256 = require('js-sha256')
         return sha256.hex(str).toString()
     },
+    calculateTotalScore: (scores, subject = null) => {
+        let total = 0
+        if (subject) {
+            scores?.forEach((score) => {
+            if (score.subject === subject) total += score.score
+            })
+            return total
+        } else {
+            scores?.forEach((score) => {
+            total += score.score
+            })
+            return total
+        }
+    },
+    calculateAverageScore: (scores, number) => {
+        let total = 0
+        scores?.forEach((score) => {
+            total += score.score
+        })
+
+        if (total === 0) return '0.00'
+        return (total / number).toFixed(2)
+    },
+    calculateGraduateResult: (scores, subjects) => {
+        let totalScore = 0
+        let passScore = 0
+        let fullScore = 0
+
+        scores?.forEach((score) => {
+            totalScore += score.score
+        })
+
+        subjects?.forEach((subject) => {
+            passScore += subject.passScore
+            fullScore += subject.fullScore
+        })
+
+        const totalAverage = totalScore / subjects?.length
+        const passAverage = passScore / subjects?.length
+        const fullAverage = fullScore / subjects?.length
+
+        const gradeF = passAverage
+        const gradeE = passAverage + (fullAverage - passAverage) / 4
+        const gradeD = gradeE + (fullAverage - passAverage) / 4
+        const gradeC = gradeD + (fullAverage - passAverage) / 4
+        const gradeB = gradeD + (fullAverage - passAverage) / 3
+        const gradeA = fullAverage
+
+        switch (true) {
+            case totalAverage < gradeF:
+            return 'F'
+            case totalAverage < gradeE:
+            return 'E'
+            case totalAverage < gradeD:
+            return 'D'
+            case totalAverage < gradeC:
+            return 'C'
+            case totalAverage < gradeB:
+            return 'B'
+            case totalAverage <= gradeA:
+            return 'A'
+        }
+    },
     readExcel: (buffer, field) => {
         const xlsx = require('xlsx')
         const ObjectId = mongoose.Types.ObjectId

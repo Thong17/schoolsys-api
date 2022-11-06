@@ -26,6 +26,9 @@ const schema = mongoose.Schema(
             type: Object,
             required: [true, 'Name is required!']
         },
+        level: {
+            type: String
+        },
         createdBy: {
             type: String
         },

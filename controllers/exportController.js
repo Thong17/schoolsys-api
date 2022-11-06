@@ -7,6 +7,8 @@ const User = require('../models/User')
 const Class = require('../models/Class')
 const { Workbook } = require('exceljs')
 const { worksheetOption } = require('../configs/excel')
+const Academy = require('../models/Academy')
+const { calculateAverageScore, calculateGraduateResult, calculateTotalScore } = require('../helpers/utils')
 
 exports.attendanceClass = async (req, res) => {
     try {
@@ -113,7 +115,7 @@ exports.attendanceClass = async (req, res) => {
         })
 
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-        res.setHeader('Content-Disposition', `attachment; filename=class_attendance_from_${fromDate}_to_${fromDate}`)
+        res.setHeader('Content-Disposition', `attachment; filename=class_attendance_from_${fromDate}_to_${toDate}`)
 
         const file = await workbook.xlsx.writeBuffer()
 
@@ -302,7 +304,7 @@ exports.attendanceStudent = async (req, res) => {
         })
 
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-        res.setHeader('Content-Disposition', `attachment; filename=class_attendance_from_${fromDate}_to_${fromDate}`)
+        res.setHeader('Content-Disposition', `attachment; filename=class_attendance_from_${fromDate}_to_${toDate}`)
 
         const file = await workbook.xlsx.writeBuffer()
 
@@ -312,3 +314,147 @@ exports.attendanceStudent = async (req, res) => {
     }
 }
 
+exports.academyClass = async (req, res) => {
+    try {
+        const { id } = req.params
+
+        const academy = await Academy.findById(id)
+
+        const workbook = new Workbook()
+        const worksheet = workbook.addWorksheet(academy.name['English'], worksheetOption)
+        worksheet.spliceRows(1, 1, ...new Array(8))
+
+        worksheet.properties.defaultRowHeight = 15
+        worksheet.properties.outlineLevelCol = 2
+
+        // Logo
+        const logo = workbook.addImage({ filename: 'uploads/logo.jpg', extension:'png' })
+        worksheet.mergeCells('B1:B3')
+        worksheet.addImage(logo, {
+            tl: { col: 1.1, row: 0.1 },
+            ext: { width: 50, height: 50 }
+        })
+
+        // Title
+        worksheet.mergeCells('G1:H3')
+        worksheet.getCell('G1:H3').value = 'Student Attendance Report'.toUpperCase()
+        worksheet.getCell('G1:H3').style = { alignment: { vertical: 'middle', horizontal: 'right' }, font: { size: 13, bold: true } }
+        
+        // Subtitle
+        worksheet.getCell('B5').value = `Class`
+        worksheet.getCell('B5').style = { alignment: { horizontal: 'left' } }
+        worksheet.getCell('C5').value = `${academy.name['English'] || 'N/A'}`
+        worksheet.getCell('C5').style = { alignment: { horizontal: 'right' } }
+
+        worksheet.getCell('B6').value = 'Grade'
+        worksheet.getCell('B6').style = { alignment: { horizontal: 'left' } }
+        worksheet.getCell('C6').value = `${academy.grade['English'] || 'N/A'}`
+        worksheet.getCell('C6').style = { alignment: { horizontal: 'right' } }
+
+        worksheet.getCell('B7').value = 'Level'
+        worksheet.getCell('B7').style = { alignment: { horizontal: 'left' } }
+        worksheet.getCell('C7').value = `${academy.level || 'N/A'}`
+        worksheet.getCell('C7').style = { alignment: { horizontal: 'right' } }
+
+        worksheet.getCell('G5').value = `Room`
+        worksheet.getCell('G5').style = { alignment: { horizontal: 'left' } }
+        worksheet.getCell('H5').value = `${academy.room || 'N/A'}`
+        worksheet.getCell('H5').style = { alignment: { horizontal: 'right' } }
+
+        worksheet.getCell('G6').value = `Started At`
+        worksheet.getCell('G6').style = { alignment: { horizontal: 'left' } }
+        worksheet.getCell('H6').value = new Date(academy.startedAt) || 'N/A'
+        worksheet.getCell('H6').style = { alignment: { horizontal: 'right' } }
+
+        worksheet.getCell('G7').value = `Schedule`
+        worksheet.getCell('G7').style = { alignment: { horizontal: 'left' } }
+        worksheet.getCell('H7').value = `${academy.schedule || 'N/A'}`
+        worksheet.getCell('H7').style = { alignment: { horizontal: 'right' } }
+        
+        // Header
+        worksheet.columns = [
+            { 
+                key: 'no', 
+                width: 5,  
+            },
+            { 
+                key: 'rank', 
+                width: 7,
+            },
+            { 
+                key: 'id', 
+                width: 20,  
+            },
+            { 
+                key: 'name', 
+                width: 20,
+            },
+            { 
+                key: 'gender', 
+                width: 25,
+            },
+            { 
+                key: 'score', 
+                width: 10,
+            },
+            { 
+                key: 'average', 
+                width: 25,
+            },
+            { 
+                key: 'grade', 
+                width: 25,
+            },
+        ]
+
+        const header = worksheet.addRow({ rank: 'Rank', id: 'ID', name: 'Name', gender: 'Gender', score: 'Score', average: 'Average', grade: 'Grade' })
+        header.height = 23
+        header.eachCell((cell) => {
+            cell.style = {
+                font: {
+                    bold: true,
+                    color: { argb: '000000' },
+                    size: 11,
+                },
+                fill:{
+                    fgColor: { argb: 'DDDDDD' } ,
+                    pattern: 'solid',
+                    type: 'pattern' 
+                },
+                alignment: {
+                    vertical:'middle',
+                    horizontal:'left'
+                }
+            }
+            if (cell._column._key === 'no') {
+                cell.alignment = { wrapText: true, vertical: 'middle', horizontal: 'right' }
+            }
+        })
+
+        // Freeze row
+        worksheet.views = [{ state: 'frozen', ySplit: 9 }]
+
+        // Body
+        academy.students.sort((a, b) => a.score > b.score ? -1 : 1).forEach((student, index) => {
+            const scores = academy.scores?.filter(item => item.student.equals(student.id))
+            worksheet.addRow({ 
+                rank: `#${index + 1}`,
+                id: student.ref, 
+                name: `${student.lastName} ${student.firstName}`, 
+                gender: student.gender,
+                score: calculateTotalScore(scores),
+                average: calculateAverageScore(scores, academy.subjects.length),
+                grade: calculateGraduateResult(scores, academy.subjects), 
+            })
+        })
+
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        res.setHeader('Content-Disposition', `attachment; filename=class_attendance`)
+
+        const file = await workbook.xlsx.writeBuffer()
+
+        return response.success(200, { file }, res)
+    } catch (err) {
+        if (err) return response.failure(422, { msg: failureMsg.trouble }, res, err)
+    }
+}
