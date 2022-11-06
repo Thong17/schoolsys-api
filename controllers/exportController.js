@@ -8,14 +8,14 @@ const Class = require('../models/Class')
 const { Workbook } = require('exceljs')
 const { worksheetOption } = require('../configs/excel')
 const Academy = require('../models/Academy')
-const { calculateAverageScore, calculateGraduateResult, calculateTotalScore } = require('../helpers/utils')
+const { calculateAverageScore, calculateGraduateResult, calculateTotalScore, inputDateFormat } = require('../helpers/utils')
 
 exports.attendanceClass = async (req, res) => {
     try {
         const { fromDate, toDate } = req.body
         const id = req.params.id
         const _class = await Class.findById(id).populate('grade')
-        const attendances = await Attendance.find({ class: id, created_on: { $gte: fromDate, $lt: toDate } }).populate('user')
+        const attendances = await Attendance.find({ class: id, createdAt: { $gte: fromDate, $lt: toDate } }).populate('user')
 
         const workbook = new Workbook()
         const worksheet = workbook.addWorksheet(`Class ${_class.name['English']}`.toUpperCase(), worksheetOption)
@@ -213,9 +213,9 @@ exports.attendanceStudent = async (req, res) => {
         worksheet.getCell('H6').value = `${userObj.contact || 'N/A'}`
         worksheet.getCell('H6').style = { alignment: { horizontal: 'right' } }
 
-        worksheet.getCell('G7').value = `Address`
+        worksheet.getCell('G7').value = `Date`
         worksheet.getCell('G7').style = { alignment: { horizontal: 'left' } }
-        worksheet.getCell('H7').value = `${userObj.address || 'N/A'}`
+        worksheet.getCell('H7').value = `${inputDateFormat(fromDate)} - ${inputDateFormat(toDate)}`
         worksheet.getCell('H7').style = { alignment: { horizontal: 'right' } }
         
         // Header
@@ -288,7 +288,7 @@ exports.attendanceStudent = async (req, res) => {
         worksheet.views = [{ state: 'frozen', ySplit: 9 }]
 
         // Body
-        const attendances = await Attendance.find({ user: id, created_on: { $gte: fromDate, $lt: toDate } }).populate({ path: 'class', populate: { path: 'grade' }})
+        const attendances = await Attendance.find({ user: id, createdAt: { $gte: fromDate, $lt: toDate } }).populate({ path: 'class', populate: { path: 'grade' }})
         attendances.forEach((attendance, index) => {
             const duration = Math.ceil(Math.abs(new Date(attendance.checkedOut) - new Date(attendance.checkedIn)) / (1000 * 60 * 60 * 24))
             worksheet.addRow({ 
