@@ -111,6 +111,7 @@ schema.statics.graduate = function (id, createdBy, cb) {
                 subjects: _class.grade?.subjects.map(item => ({ id: item._id, name: item.name, passScore: item.passScore, fullScore: item.fullScore, teacher: item.teacher?.toObject({ getters: true }) })),
                 scores: scores.map(item => ({ id: item._id, score: item.score, student: item.student, subject: item.subject })),
                 grade: _class.grade?.name,
+                level: _class.grade?.level,
                 createdBy,
                 teacher: _class.teacher?.toObject({ getters: true }),
                 monitor: _class.monitor?.toObject({ getters: true }),
