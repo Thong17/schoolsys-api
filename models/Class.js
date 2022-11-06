@@ -87,7 +87,10 @@ schema.post('find', async function (data) {
 })
 
 schema.statics.graduate = function (id, createdBy, cb) {
-    this.findById(id).populate({ path: 'students', populate: { path: 'currentAcademy' } }).populate('grade')
+    this.findById(id)
+        .populate({ path: 'students', populate: [{ path: 'currentAcademy', populate: 'scores' }, { path: 'profile' }] })
+        .populate({ path: 'grade', populate: { path: 'subjects', populate: 'teacher' } })
+        .populate('teacher monitor')
         .then(async _class => {
             if (!_class) return cb({ code: 404, msg: 'Class is not exist' }, null)
             let scores = []
@@ -104,13 +107,14 @@ schema.statics.graduate = function (id, createdBy, cb) {
                 name: _class.name,
                 room: _class.room,
                 schedule: _class.schedule,
-                students: _class.students,
-                subjects: _class.grade?.subjects,
-                scores,
+                students: _class.students.map(item => ({ id: item._id, ref: item.ref, lastName: item.lastName, firstName: item.firstName, gender: item.gender, dateOfBirth: item.dateOfBirth, profile: item.profile?.toObject({ getters: true }) })),
+                subjects: _class.grade?.subjects.map(item => ({ id: item._id, name: item.name, passScore: item.passScore, fullScore: item.fullScore, teacher: item.teacher?.toObject({ getters: true }) })),
+                scores: scores.map(item => ({ id: item._id, score: item.score, student: item.student, subject: item.subject })),
                 grade: _class.grade?.name,
+                level: _class.grade?.level,
                 createdBy,
-                teacher: _class.teacher,
-                monitor: _class.monitor,
+                teacher: _class.teacher?.toObject({ getters: true }),
+                monitor: _class.monitor?.toObject({ getters: true }),
                 startedAt: _class.startedAt,
                 endedAt: Date.now()
             })
