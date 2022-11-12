@@ -5,6 +5,7 @@ const { failureMsg } = require('../constants/responseMsg')
 const { extractJoiErrors, readExcel, encryptPassword, comparePassword } = require('../helpers/utils')
 const { createUserValidation, updateUserValidation } = require('../middleware/validations/userValidation')
 const Student = require('../models/Student')
+const Teacher = require('../models/Teacher')
 
 exports.index = (req, res) => {
     const limit = parseInt(req.query.limit) || 10
@@ -25,8 +26,30 @@ exports.index = (req, res) => {
     User.find({ isDisabled: false, ...query }, async (err, users) => {
         if (err) return response.failure(422, { msg: failureMsg.trouble }, res, err)
 
+        const data = []
+        for (const index in users) {
+            if (Object.hasOwnProperty.call(users, index)) {
+                let user = users[index]
+                switch (user.segment) {
+                    case 'Student':
+                        const student = await Student.findOne({ authenticate: user._id })
+                        user = { ...user._doc, fullName: `${student.lastName} ${student.firstName}` }
+                        break
+                    case 'Teacher':
+                        const teacher = await Teacher.findOne({ authenticate: user._id })
+                        user = { ...user._doc, fullName: `${teacher.lastName} ${teacher.firstName}` }
+                        break
+                
+                    default:
+                        break
+                }
+                data.push(user)
+            }
+        }
+
+
         const totalCount = await User.count({ isDisabled: false })
-        return response.success(200, { data: users, length: totalCount }, res)
+        return response.success(200, { data, length: totalCount }, res)
     })
         .skip(page * limit).limit(limit)
         .sort(filterObj)
