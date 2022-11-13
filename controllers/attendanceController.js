@@ -16,6 +16,37 @@ exports.index = (req, res) => {
     })
 }
 
+exports.report = (req, res) => {
+    const classId = req.params.classId
+    Attendance.find({ class: classId }, async (err, attendances) => {
+        if (err) return response.failure(422, { msg: failureMsg.trouble }, res, err)
+
+        const data = []
+        for (const index in attendances) {
+            if (Object.hasOwnProperty.call(attendances, index)) {
+                const attendance = attendances[index]
+                switch (attendance.user.segment) {
+                    case 'Student':
+                        const student = await Student.findOne({ authenticate: attendance.user._id }).populate('profile')
+                        data.push({ ...attendance._doc, username: `${student.lastName} ${student.firstName}`, profile: student.profile.filename, gender: student.gender })
+                        break
+
+                    case 'Teacher':
+                        const teacher = await Teacher.findOne({ authenticate: attendance.user._id }).populate('profile')
+                        data.push({ ...attendance._doc, username: `${teacher.lastName} ${teacher.firstName}`, profile: teacher.profile.filename, gender: teacher.gender })
+                        break
+
+                    default:
+                        data.push({ ...attendance._doc })
+                        break
+                }
+            }
+        }
+
+        return response.success(200, { data }, res)
+    }).populate('user')
+}
+
 exports.detail = (req, res) => {
     const userId = req.params.userId
     const { classId, type } = req.query

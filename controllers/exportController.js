@@ -13,9 +13,12 @@ const { calculateAverageScore, calculateGraduateResult, calculateTotalScore, inp
 exports.attendanceClass = async (req, res) => {
     try {
         const { fromDate, toDate } = req.body
+        let query = {}
+        if (fromDate && toDate) query = { createdAt: { $gte: fromDate, $lt: toDate } }
+        
         const id = req.params.id
         const _class = await Class.findById(id).populate('grade')
-        const attendances = await Attendance.find({ class: id, createdAt: { $gte: fromDate, $lt: toDate } }).populate('user')
+        const attendances = await Attendance.find({ class: id, ...query }).populate('user')
 
         const workbook = new Workbook()
         const worksheet = workbook.addWorksheet(`Class ${_class.name['English']}`.toUpperCase(), worksheetOption)

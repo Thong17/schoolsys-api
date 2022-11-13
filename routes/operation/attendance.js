@@ -1,12 +1,16 @@
 const multer = require('multer')
 const upload = multer()
 const router = require('express').Router()
-const { index, detail, checkIn, disable, checkOut, permission, batch, _import, _delete, reset, checkInAll, checkOutAll, resetAll } = require('../../controllers/attendanceController')
+const { index, report, detail, checkIn, disable, checkOut, permission, batch, _import, _delete, reset, checkInAll, checkOutAll, resetAll } = require('../../controllers/attendanceController')
 const security = require('../../middleware/security')
 const { privilege } = require('../../constants/roleMap')
 
 router.get('/', security.role(privilege.attendance.list), (req, res) => {
     index(req, res)
+})
+
+router.get('/report/:classId', security.role(privilege.attendance.list), (req, res) => {
+    report(req, res)
 })
 
 router.get('/detail/:userId', security.role(privilege.attendance.report), (req, res) => {
