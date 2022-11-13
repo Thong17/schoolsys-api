@@ -18,7 +18,11 @@ exports.index = (req, res) => {
 
 exports.report = (req, res) => {
     const classId = req.params.classId
-    Attendance.find({ class: classId }, async (err, attendances) => {
+    const { fromDate, toDate } = req.query
+    let query = {}
+    if (fromDate && toDate) query = { createdAt: { $gte: fromDate, $lt: toDate } }
+
+    Attendance.find({ class: classId, ...query }, async (err, attendances) => {
         if (err) return response.failure(422, { msg: failureMsg.trouble }, res, err)
 
         const data = []

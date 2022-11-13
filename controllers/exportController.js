@@ -15,7 +15,7 @@ exports.attendanceClass = async (req, res) => {
         const { fromDate, toDate } = req.body
         let query = {}
         if (fromDate && toDate) query = { createdAt: { $gte: fromDate, $lt: toDate } }
-        
+
         const id = req.params.id
         const _class = await Class.findById(id).populate('grade')
         const attendances = await Attendance.find({ class: id, ...query }).populate('user')
@@ -340,7 +340,7 @@ exports.academyClass = async (req, res) => {
 
         // Title
         worksheet.mergeCells('G1:H3')
-        worksheet.getCell('G1:H3').value = 'Student Attendance Report'.toUpperCase()
+        worksheet.getCell('G1:H3').value = 'Student Academy Report'.toUpperCase()
         worksheet.getCell('G1:H3').style = { alignment: { vertical: 'middle', horizontal: 'right' }, font: { size: 13, bold: true } }
         
         // Subtitle
