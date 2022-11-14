@@ -168,7 +168,7 @@ exports.attendanceClass = async (req, res) => {
                 })
 
                 worksheet.addRow({ 
-                    no: index + 1, 
+                    no: parseInt(index) + 1, 
                     id: student.ref,
                     lastName: student.lastName,
                     firstName: student.firstName,
