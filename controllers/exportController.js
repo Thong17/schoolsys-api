@@ -117,7 +117,7 @@ exports.attendanceClass = async (req, res) => {
                     size: 11,
                 },
                 fill:{
-                    fgColor: { argb: 'F0BF60' } ,
+                    fgColor: { argb: 'F7EDA4' } ,
                     pattern: 'solid',
                     type: 'pattern' 
                 },
