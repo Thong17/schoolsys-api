@@ -26,7 +26,8 @@ const schema = mongoose.Schema(
             default: false
         },
         permissionType: {
-            type: String
+            type: String,
+            default: 'Present'
         },
         description: {
             type: String
