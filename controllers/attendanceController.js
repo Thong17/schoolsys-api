@@ -16,39 +16,56 @@ exports.index = (req, res) => {
     })
 }
 
-exports.report = (req, res) => {
-    const classId = req.params.classId
-    const { fromDate, toDate } = req.query
-    let query = {}
-    if (fromDate && toDate) query = { createdAt: { $gte: fromDate, $lt: toDate } }
+exports.report = async (req, res) => {
+    try {
+        const classId = req.params.classId
+        const { fromDate, toDate } = req.query
+        const _class = await Class.findById(classId).populate({ path: 'students', populate: { path: 'profile' } })
 
-    Attendance.find({ class: classId, ...query }, async (err, attendances) => {
-        if (err) return response.failure(422, { msg: failureMsg.trouble }, res, err)
+        let query = {}
+        if (fromDate && toDate) query = { createdAt: { $gte: fromDate < _class.startedAt ? _class.startedAt : fromDate, $lt: toDate } }
 
         const data = []
-        for (const index in attendances) {
-            if (Object.hasOwnProperty.call(attendances, index)) {
-                const attendance = attendances[index]
-                switch (attendance.user.segment) {
-                    case 'Student':
-                        const student = await Student.findOne({ authenticate: attendance.user._id }).populate('profile')
-                        data.push({ ...attendance._doc, username: `${student.lastName} ${student.firstName}`, profile: student.profile.filename, gender: student.gender })
-                        break
+        for (const index in _class.students) {
+            if (Object.hasOwnProperty.call(_class.students, index)) {
+                const student = _class.students[index];
+                let totalAttendance = 0
+                let totalAbsent = 0
+                let totalPermission = 0
+                let totalOthers = 0
 
-                    case 'Teacher':
-                        const teacher = await Teacher.findOne({ authenticate: attendance.user._id }).populate('profile')
-                        data.push({ ...attendance._doc, username: `${teacher.lastName} ${teacher.firstName}`, profile: teacher.profile.filename, gender: teacher.gender })
-                        break
+                const attendances = await Attendance.find({ class: classId, user: student.authenticate, ...query })
+                attendances.forEach((attendance) => {
+                    switch (attendance.permissionType) {
+                        case 'Present':
+                            totalAttendance += 1
+                            break
 
-                    default:
-                        data.push({ ...attendance._doc })
-                        break
-                }
+                        case 'Absent':
+                            totalAbsent += 1
+                            break
+
+                        case 'Permission':
+                            totalPermission += 1
+                            break
+
+                        case 'Other':
+                            totalOthers += 1
+                            break
+                    
+                        default:
+                            break
+                    }
+                })
+
+                data.push({ ...student._doc, totalAttendance, totalAbsent, totalPermission, totalOthers })
             }
         }
 
         return response.success(200, { data }, res)
-    }).populate('user')
+    } catch (err) {
+        return response.failure(422, { msg: failureMsg.trouble }, res, err)
+    }
 }
 
 exports.detail = (req, res) => {
