@@ -13,12 +13,12 @@ const { calculateAverageScore, calculateGraduateResult, calculateTotalScore, inp
 exports.attendanceClass = async (req, res) => {
     try {
         const { fromDate, toDate } = req.body
-        let query = {}
-        if (fromDate && toDate) query = { createdAt: { $gte: fromDate, $lt: toDate } }
 
         const id = req.params.id
-        const _class = await Class.findById(id).populate('grade')
-        const attendances = await Attendance.find({ class: id, ...query }).populate('user')
+        const _class = await Class.findById(id).populate('grade students teacher')
+
+        let query = {}
+        if (fromDate && toDate) query = { createdAt: { $gte: fromDate < _class.startedAt ? _class.startedAt : fromDate, $lt: toDate } }
 
         const workbook = new Workbook()
         const worksheet = workbook.addWorksheet(`Class ${_class.name['English']}`.toUpperCase(), worksheetOption)
@@ -135,9 +135,51 @@ exports.attendanceClass = async (req, res) => {
         worksheet.views = [{ state: 'frozen', ySplit: 13 }]
 
         // Body
-        attendances.forEach((attendance, index) => {
-            worksheet.addRow({ no: index + 1, id: attendance.user.username, checkedIn: attendance.checkedIn, checkedOut: attendance.checkedOut })
-        })
+        for (const index in _class.students) {
+            if (Object.hasOwnProperty.call(_class.students, index)) {
+                const student = _class.students[index];
+                let totalAttendance = 0
+                let totalAbsent = 0
+                let totalPermission = 0
+                let totalOthers = 0
+
+                const attendances = await Attendance.find({ class: id, user: student.authenticate, ...query })
+                attendances.forEach((attendance) => {
+                    switch (attendance.permissionType) {
+                        case 'Present':
+                            totalAttendance += 1
+                            break
+
+                        case 'Absent':
+                            totalAbsent += 1
+                            break
+
+                        case 'Permission':
+                            totalPermission += 1
+                            break
+
+                        case 'Other':
+                            totalOthers += 1
+                            break
+                    
+                        default:
+                            break
+                    }
+                })
+
+                worksheet.addRow({ 
+                    no: index + 1, 
+                    id: student.ref,
+                    lastName: student.lastName,
+                    firstName: student.firstName,
+                    gender: student.gender,
+                    attendance: totalAttendance,
+                    absent: totalAbsent,
+                    permission: totalPermission,
+                    others: totalOthers,
+                })
+            }
+        }
 
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
         res.setHeader('Content-Disposition', `attachment; filename=class_attendance_from_${fromDate}_to_${toDate}`)
