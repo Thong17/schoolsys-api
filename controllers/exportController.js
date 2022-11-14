@@ -23,69 +23,91 @@ exports.attendanceClass = async (req, res) => {
         const workbook = new Workbook()
         const worksheet = workbook.addWorksheet(`Class ${_class.name['English']}`.toUpperCase(), worksheetOption)
         
-        worksheet.spliceRows(1, 1, ...new Array(7))
+        worksheet.spliceRows(1, 1, ...new Array(12))
 
         worksheet.properties.defaultRowHeight = 15
         worksheet.properties.outlineLevelCol = 2
 
         // Logo
-        const logo = workbook.addImage({ filename: 'uploads/logo.jpg', extension:'png' })
-        worksheet.mergeCells('B1:C3')
+        const logo = workbook.addImage({ filename: 'uploads/logo.png', extension:'png' })
+        const headerText = workbook.addImage({ filename: 'uploads/header.png', extension:'png' })
         worksheet.addImage(logo, {
-            tl: { col: 1.1, row: 0.1 },
-            ext: { width: 50, height: 50 }
+            tl: { col: 0.35, row: 1.3 },
+            ext: { width: 170, height: 90 }
+        })
+        worksheet.addImage(headerText, {
+            tl: { col: 7.1, row: 1.1 },
+            ext: { width: 270, height: 90 }
         })
 
         // Title
-        worksheet.mergeCells('D2:E3')
-        worksheet.getCell('D2:E3').value = 'Attendance Report'.toUpperCase()
-        worksheet.getCell('D2:E3').style = { alignment: { vertical: 'middle', horizontal: 'right' }, font: { size: 13, bold: true } }
+        worksheet.mergeCells('A9:I9')
+        worksheet.getCell('A9:I9').value = 'Student Attendance Report'.toUpperCase()
+        worksheet.getCell('A9:I9').style = { alignment: { vertical: 'middle', horizontal: 'center' }, font: { size: 13, bold: true }}
         
         // Subtitle
-        worksheet.mergeCells('B5:C5')
-        worksheet.getCell('B5:C5').value = `Class: ${_class.name['English']}`
+        worksheet.mergeCells('A10:I10')
+        worksheet.getCell('A10:I10').value = `Academic Year: 2022-2023`
+        worksheet.getCell('A10:I10').style = { alignment: { vertical: 'middle', horizontal: 'center' }, font: { size: 13 }}
 
-        worksheet.mergeCells('B6:C6')
-        worksheet.getCell('B6:C6').value = `Room: ${_class.room || 'N/A'}`
+        worksheet.getCell('B11').value = `Class:`
+        worksheet.getCell('B11').style = { alignment: { vertical: 'middle', horizontal: 'right' }}
+        worksheet.getCell('C11').value = `${_class.name['English']}`
 
-        worksheet.mergeCells('E5')
-        worksheet.getCell('E5').value = `Grade: ${_class.grade.name['English']}`
-        worksheet.getCell('E5').style = { alignment: { horizontal: 'right' } }
 
-        worksheet.mergeCells('E6')
-        worksheet.getCell('E6').value = `Schedule: ${_class.schedule || 'N/A'}`
-        worksheet.getCell('E6').style = { alignment: { horizontal: 'right' } }
+        worksheet.getCell('E11').value = `Shift:`
+        worksheet.getCell('F11').value = `${_class.schedule || 'N/A'}`
+
+        worksheet.getCell('H11').value = `Date:`
+        worksheet.getCell('I11').value = new Date()
         
         // Header
         worksheet.columns = [
             { 
-                width: 5
-            },
-            { 
                 key: 'no', 
                 width: 5,  
+                style: {
+                    alignment: {
+                        vertical:'middle',
+                        horizontal:'center'
+                    }
+                }
             },
             { 
                 key: 'id', 
                 width: 20,
             }, 
             { 
-                key: 'checkedIn', 
-                width: 25,
-                style: {
-                    numFmt: 'dd/mm/yyyy h:mm:ss AM/PM'
-                }
-            },
+                key: 'lastName', 
+                width: 20,
+            }, 
             { 
-                key: 'checkedOut', 
-                width: 25,
-                style: {
-                    numFmt: 'dd/mm/yyyy h:mm:ss'
-                }
-            }
+                key: 'firstName', 
+                width: 20,
+            }, 
+            { 
+                key: 'gender', 
+                width: 20,
+            }, 
+            { 
+                key: 'attendance', 
+                width: 20,
+            }, 
+            { 
+                key: 'absent', 
+                width: 20,
+            }, 
+            { 
+                key: 'permission', 
+                width: 20,
+            }, 
+            { 
+                key: 'others', 
+                width: 20,
+            }, 
         ]
 
-        const header = worksheet.addRow({ no: 'No', id: 'ID', checkedIn: 'Checked In', checkedOut: 'Checked Out' })
+        const header = worksheet.addRow({ no: 'No', id: 'ID', lastName: 'Last Name', firstName: 'First Name', gender: 'Gender', attendance: 'Attendance', absent: 'Absent', permission: 'Permission', others: 'Others' })
         header.height = 23
         header.eachCell((cell) => {
             cell.style = {
@@ -95,7 +117,7 @@ exports.attendanceClass = async (req, res) => {
                     size: 11,
                 },
                 fill:{
-                    fgColor: { argb: 'DDDDDD' } ,
+                    fgColor: { argb: 'F0BF60' } ,
                     pattern: 'solid',
                     type: 'pattern' 
                 },
@@ -105,12 +127,12 @@ exports.attendanceClass = async (req, res) => {
                 }
             }
             if (cell._column._key === 'no') {
-                cell.alignment = { wrapText: true, vertical: 'middle', horizontal: 'right' }
+                cell.alignment = { wrapText: true, vertical: 'middle', horizontal: 'center' }
             }
         })
 
         // Freeze row
-        worksheet.views = [{ state: 'frozen', ySplit: 8 }]
+        worksheet.views = [{ state: 'frozen', ySplit: 13 }]
 
         // Body
         attendances.forEach((attendance, index) => {
