@@ -36,7 +36,7 @@ exports.attendanceClass = async (req, res) => {
             ext: { width: 170, height: 90 }
         })
         worksheet.addImage(headerText, {
-            tl: { col: 7.1, row: 1.1 },
+            tl: { col: 5.3, row: 1.3 },
             ext: { width: 270, height: 90 }
         })
 
@@ -75,35 +75,59 @@ exports.attendanceClass = async (req, res) => {
             },
             { 
                 key: 'id', 
-                width: 20,
+                width: 15,
             }, 
             { 
                 key: 'lastName', 
-                width: 20,
+                width: 13,
             }, 
             { 
                 key: 'firstName', 
-                width: 20,
+                width: 13,
             }, 
             { 
                 key: 'gender', 
-                width: 20,
+                width: 8,
             }, 
             { 
                 key: 'attendance', 
-                width: 20,
+                width: 11,
+                style: {
+                    alignment: {
+                        vertical:'middle',
+                        horizontal:'center'
+                    }
+                }
             }, 
             { 
                 key: 'absent', 
-                width: 20,
+                width: 8,
+                style: {
+                    alignment: {
+                        vertical:'middle',
+                        horizontal:'center'
+                    }
+                }
             }, 
             { 
                 key: 'permission', 
-                width: 20,
+                width: 11,
+                style: {
+                    alignment: {
+                        vertical:'middle',
+                        horizontal:'center'
+                    }
+                }
             }, 
             { 
                 key: 'others', 
-                width: 20,
+                width: 11,
+                style: {
+                    alignment: {
+                        vertical:'middle',
+                        horizontal:'center'
+                    }
+                }
             }, 
         ]
 
@@ -126,7 +150,7 @@ exports.attendanceClass = async (req, res) => {
                     horizontal:'left'
                 }
             }
-            if (cell._column._key === 'no') {
+            if (['no', 'attendance', 'absent', 'permission', 'others'].includes(cell._column._key)) {
                 cell.alignment = { wrapText: true, vertical: 'middle', horizontal: 'center' }
             }
         })
