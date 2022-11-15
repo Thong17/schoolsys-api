@@ -36,30 +36,32 @@ exports.attendanceClass = async (req, res) => {
             ext: { width: 170, height: 90 }
         })
         worksheet.addImage(headerText, {
-            tl: { col: 5.3, row: 1.3 },
+            tl: { col: 4.1, row: 1.3 },
             ext: { width: 270, height: 90 }
         })
 
         // Title
-        worksheet.mergeCells('A9:I9')
-        worksheet.getCell('A9:I9').value = 'Student Attendance Report'.toUpperCase()
-        worksheet.getCell('A9:I9').style = { alignment: { vertical: 'middle', horizontal: 'center' }, font: { size: 13, bold: true }}
+        worksheet.mergeCells('A9:H9')
+        worksheet.getCell('A9:H9').value = 'Student Attendance Report'.toUpperCase()
+        worksheet.getCell('A9:H9').style = { alignment: { vertical: 'middle', horizontal: 'center' }, font: { size: 13, bold: true }}
         
         // Subtitle
-        worksheet.mergeCells('A10:I10')
-        worksheet.getCell('A10:I10').value = `Academic Year: 2022-2023`
-        worksheet.getCell('A10:I10').style = { alignment: { vertical: 'middle', horizontal: 'center' }, font: { size: 13 }}
+        worksheet.mergeCells('A10:H10')
+        worksheet.getCell('A10:H10').value = `Academic Year: 2022-2023`
+        worksheet.getCell('A10:H10').style = { alignment: { vertical: 'middle', horizontal: 'center' }, font: { size: 13 }}
 
         worksheet.getCell('B11').value = `Class:`
         worksheet.getCell('B11').style = { alignment: { vertical: 'middle', horizontal: 'right' }}
         worksheet.getCell('C11').value = `${_class.name['English']}`
 
 
-        worksheet.getCell('E11').value = `Shift:`
-        worksheet.getCell('F11').value = `${_class.schedule || 'N/A'}`
+        worksheet.getCell('D11').value = `Shift:`
+        worksheet.getCell('D11').style = { alignment: { vertical: 'middle', horizontal: 'right' }}
+        worksheet.getCell('E11').value = `${_class.schedule || 'N/A'}`
 
-        worksheet.getCell('H11').value = `Date:`
-        worksheet.getCell('I11').value = new Date()
+        worksheet.getCell('G11').value = `Date:`
+        worksheet.getCell('G11').style = { alignment: { vertical: 'middle', horizontal: 'right' }}
+        worksheet.getCell('H11').value = new Date()
         
         // Header
         worksheet.columns = [
@@ -79,11 +81,11 @@ exports.attendanceClass = async (req, res) => {
             }, 
             { 
                 key: 'lastName', 
-                width: 13,
+                width: 15,
             }, 
             { 
                 key: 'firstName', 
-                width: 13,
+                width: 15,
             }, 
             { 
                 key: 'gender', 
@@ -92,46 +94,18 @@ exports.attendanceClass = async (req, res) => {
             { 
                 key: 'attendance', 
                 width: 11,
-                style: {
-                    alignment: {
-                        vertical:'middle',
-                        horizontal:'center'
-                    }
-                }
             }, 
             { 
                 key: 'absent', 
-                width: 8,
-                style: {
-                    alignment: {
-                        vertical:'middle',
-                        horizontal:'center'
-                    }
-                }
+                width: 11,
             }, 
             { 
                 key: 'permission', 
                 width: 11,
-                style: {
-                    alignment: {
-                        vertical:'middle',
-                        horizontal:'center'
-                    }
-                }
-            }, 
-            { 
-                key: 'others', 
-                width: 11,
-                style: {
-                    alignment: {
-                        vertical:'middle',
-                        horizontal:'center'
-                    }
-                }
             }, 
         ]
 
-        const header = worksheet.addRow({ no: 'No', id: 'ID', lastName: 'Last Name', firstName: 'First Name', gender: 'Gender', attendance: 'Attendance', absent: 'Absent', permission: 'Permission', others: 'Others' })
+        const header = worksheet.addRow({ no: 'No', id: 'ID', lastName: 'Last Name', firstName: 'First Name', gender: 'Gender', attendance: 'Attendance', absent: 'Absent', permission: 'Permission' })
         header.height = 23
         header.eachCell((cell) => {
             cell.style = {
@@ -150,7 +124,7 @@ exports.attendanceClass = async (req, res) => {
                     horizontal:'left'
                 }
             }
-            if (['no', 'attendance', 'absent', 'permission', 'others'].includes(cell._column._key)) {
+            if (['no', 'attendance', 'absent', 'permission'].includes(cell._column._key)) {
                 cell.alignment = { wrapText: true, vertical: 'middle', horizontal: 'center' }
             }
         })
@@ -165,7 +139,6 @@ exports.attendanceClass = async (req, res) => {
                 let totalAttendance = 0
                 let totalAbsent = 0
                 let totalPermission = 0
-                let totalOthers = 0
 
                 const attendances = await Attendance.find({ class: id, user: student.authenticate, ...query })
                 attendances.forEach((attendance) => {
@@ -183,7 +156,6 @@ exports.attendanceClass = async (req, res) => {
                             break
                     
                         default:
-                            totalOthers += 1
                             break
                     }
                 })
@@ -197,7 +169,6 @@ exports.attendanceClass = async (req, res) => {
                     attendance: totalAttendance,
                     absent: totalAbsent,
                     permission: totalPermission,
-                    others: totalOthers,
                 })
             }
         }
