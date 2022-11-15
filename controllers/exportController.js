@@ -8,7 +8,7 @@ const Class = require('../models/Class')
 const { Workbook } = require('exceljs')
 const { worksheetOption } = require('../configs/excel')
 const Academy = require('../models/Academy')
-const { calculateAverageScore, calculateGraduateResult, calculateTotalScore, inputDateFormat } = require('../helpers/utils')
+const { calculateAverageScore, calculateGraduateResult, calculateTotalScore, inputDateFormat, getFullMonth } = require('../helpers/utils')
 
 exports.attendanceClass = async (req, res) => {
     try {
@@ -509,6 +509,157 @@ exports.academyClass = async (req, res) => {
 
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
         res.setHeader('Content-Disposition', `attachment; filename=class_attendance`)
+
+        const file = await workbook.xlsx.writeBuffer()
+
+        return response.success(200, { file }, res)
+    } catch (err) {
+        if (err) return response.failure(422, { msg: failureMsg.trouble }, res, err)
+    }
+}
+
+exports.educationClass = async (req, res) => {
+    try {
+        const { month } = req.body
+
+        const id = req.params.id
+        const _class = await Class.findById(id).populate({ path: 'grade', populate: { path: 'subjects' } }).populate({ path: 'students', populate: { path: 'currentAcademy', populate: { path: 'scores' } } })
+
+        const workbook = new Workbook()
+        const worksheet = workbook.addWorksheet(`Class ${_class.name['English']}`.toUpperCase(), worksheetOption)
+        
+        worksheet.spliceRows(1, 1, ...new Array(12))
+
+        worksheet.properties.defaultRowHeight = 15
+        worksheet.properties.outlineLevelCol = 2
+
+        // Logo
+        const logo = workbook.addImage({ filename: 'uploads/logo.png', extension:'png' })
+        const headerText = workbook.addImage({ filename: 'uploads/header.png', extension:'png' })
+        worksheet.addImage(logo, {
+            tl: { col: 0.35, row: 1.3 },
+            ext: { width: 170, height: 90 }
+        })
+        worksheet.addImage(headerText, {
+            tl: { col: 4.1, row: 1.3 },
+            ext: { width: 270, height: 90 }
+        })
+
+        // Title
+        worksheet.mergeCells('A9:H9')
+        worksheet.getCell('A9:H9').value = 'Student Education Report'.toUpperCase()
+        worksheet.getCell('A9:H9').style = { alignment: { vertical: 'middle', horizontal: 'center' }, font: { size: 13, bold: true }}
+        
+        // Subtitle
+        worksheet.mergeCells('A10:H10')
+        worksheet.getCell('A10:H10').value = `Academic Year: 2022-2023`
+        worksheet.getCell('A10:H10').style = { alignment: { vertical: 'middle', horizontal: 'center' }, font: { size: 13 }}
+
+        worksheet.getCell('B11').value = `Class:`
+        worksheet.getCell('B11').style = { alignment: { vertical: 'middle', horizontal: 'right' }}
+        worksheet.getCell('C11').value = `${_class.name['English']}`
+
+
+        worksheet.getCell('D11').value = `Shift:`
+        worksheet.getCell('D11').style = { alignment: { vertical: 'middle', horizontal: 'right' }}
+        worksheet.getCell('E11').value = `${_class.schedule || 'N/A'}`
+
+        worksheet.getCell('G11').value = `Month:`
+        worksheet.getCell('G11').style = { alignment: { vertical: 'middle', horizontal: 'right' }}
+        worksheet.getCell('H11').value = getFullMonth(parseInt(month))
+        
+        // Header
+        worksheet.columns = [
+            { 
+                key: 'no', 
+                width: 5,  
+                style: {
+                    alignment: {
+                        vertical:'middle',
+                        horizontal:'center'
+                    }
+                }
+            },
+            { 
+                key: 'id', 
+                width: 15,
+            }, 
+            { 
+                key: 'lastName', 
+                width: 15,
+            }, 
+            { 
+                key: 'firstName', 
+                width: 15,
+            }, 
+            { 
+                key: 'gender', 
+                width: 8,
+            }, 
+            { 
+                key: 'score', 
+                width: 11,
+            }, 
+            { 
+                key: 'average', 
+                width: 11,
+            }, 
+            { 
+                key: 'grade', 
+                width: 11,
+            }, 
+        ]
+
+        const header = worksheet.addRow({ no: 'No', id: 'ID', lastName: 'Last Name', firstName: 'First Name', gender: 'Gender', score: 'Score', average: 'Average', grade: 'Grade' })
+        header.height = 23
+        header.eachCell((cell) => {
+            cell.style = {
+                font: {
+                    bold: true,
+                    color: { argb: '000000' },
+                    size: 11,
+                },
+                fill:{
+                    fgColor: { argb: 'F7EDA4' } ,
+                    pattern: 'solid',
+                    type: 'pattern' 
+                },
+                alignment: {
+                    vertical:'middle',
+                    horizontal:'left'
+                }
+            }
+            if (['no'].includes(cell._column._key)) {
+                cell.alignment = { wrapText: true, vertical: 'middle', horizontal: 'center' }
+            }
+        })
+
+        // Freeze row
+        worksheet.views = [{ state: 'frozen', ySplit: 13 }]
+
+        // Body
+        for (const index in _class.students) {
+            if (Object.hasOwnProperty.call(_class.students, index)) {
+                const student = _class.students[index];
+                const scores = student.currentAcademy?.scores?.filter(item => item.description === month)
+                const subjects = _class?.grade?.subjects
+                const calculatedAverage = calculateAverageScore(scores, subjects?.length)
+
+                worksheet.addRow({ 
+                    no: parseInt(index) + 1, 
+                    id: student.ref,
+                    lastName: student.lastName,
+                    firstName: student.firstName,
+                    gender: student.gender,
+                    score: calculateTotalScore(scores),
+                    average: calculatedAverage,
+                    grade: calculateGraduateResult(scores, subjects),
+                })
+            }
+        }
+
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        res.setHeader('Content-Disposition', `attachment; filename=class_education_month_${month}`)
 
         const file = await workbook.xlsx.writeBuffer()
 

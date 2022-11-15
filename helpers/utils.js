@@ -125,6 +125,10 @@ module.exports = utils = {
         }
         return (d = yyyy + '/' + mm + '/' + dd)
     },
+    getFullMonth: (number) => {
+        const listMonths = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+        return listMonths[number]
+    },
     readExcel: (buffer, field) => {
         const xlsx = require('xlsx')
         const ObjectId = mongoose.Types.ObjectId
