@@ -32,7 +32,6 @@ exports.report = async (req, res) => {
                 let totalAttendance = 0
                 let totalAbsent = 0
                 let totalPermission = 0
-                let totalOthers = 0
 
                 const attendances = await Attendance.find({ class: classId, user: student.authenticate, ...query })
                 attendances.forEach((attendance) => {
@@ -50,12 +49,11 @@ exports.report = async (req, res) => {
                             break
                     
                         default:
-                            totalOthers += 1
                             break
                     }
                 })
 
-                data.push({ ...student._doc, totalAttendance, totalAbsent, totalPermission, totalOthers })
+                data.push({ ...student._doc, totalAttendance, totalAbsent, totalPermission })
             }
         }
 
