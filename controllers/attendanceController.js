@@ -48,12 +48,9 @@ exports.report = async (req, res) => {
                         case 'Permission':
                             totalPermission += 1
                             break
-
-                        case 'Other':
-                            totalOthers += 1
-                            break
                     
                         default:
+                            totalOthers += 1
                             break
                     }
                 })
