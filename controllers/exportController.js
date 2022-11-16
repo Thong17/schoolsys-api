@@ -571,7 +571,7 @@ exports.educationClass = async (req, res) => {
         // Header
         worksheet.columns = [
             { 
-                key: 'no', 
+                key: 'rank', 
                 width: 5,  
                 style: {
                     alignment: {
@@ -610,7 +610,7 @@ exports.educationClass = async (req, res) => {
             }, 
         ]
 
-        const header = worksheet.addRow({ no: 'No', id: 'ID', lastName: 'Last Name', firstName: 'First Name', gender: 'Gender', score: 'Score', average: 'Average', grade: 'Grade' })
+        const header = worksheet.addRow({ rank: 'Rank', id: 'ID', lastName: 'Last Name', firstName: 'First Name', gender: 'Gender', score: 'Score', average: 'Average', grade: 'Grade' })
         header.height = 23
         header.eachCell((cell) => {
             cell.style = {
@@ -636,6 +636,7 @@ exports.educationClass = async (req, res) => {
 
         // Freeze row
         worksheet.views = [{ state: 'frozen', ySplit: 13 }]
+        const students = []
 
         // Body
         for (const index in _class.students) {
@@ -645,8 +646,7 @@ exports.educationClass = async (req, res) => {
                 const subjects = _class?.grade?.subjects
                 const calculatedAverage = calculateAverageScore(scores, subjects?.length)
 
-                worksheet.addRow({ 
-                    no: parseInt(index) + 1, 
+                students.push({ 
                     id: student.ref,
                     lastName: student.lastName,
                     firstName: student.firstName,
@@ -657,6 +657,12 @@ exports.educationClass = async (req, res) => {
                 })
             }
         }
+        students?.sort((a, b) => a.score > b.score ? -1 : 1).forEach((student, index) => {
+            worksheet.addRow({ 
+                rank: `#${index+1}`, 
+                ...student
+            })
+        })
 
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
         res.setHeader('Content-Disposition', `attachment; filename=class_education_month_${month}`)
