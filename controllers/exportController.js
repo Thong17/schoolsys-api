@@ -395,17 +395,17 @@ exports.academyClass = async (req, res) => {
             ext: { width: 170, height: 90 }
         })
         worksheet.addImage(headerText, {
-            tl: { col: 6.6, row: 1.3 },
+            tl: { col: 5.8, row: 1.3 },
             ext: { width: 270, height: 90 }
         })
 
         // Title
-        worksheet.mergeCells('A9:H9')
+        worksheet.mergeCells('A9:G9')
         worksheet.getCell('A9:H9').value = 'Student Academy Report'.toUpperCase()
         worksheet.getCell('A9:H9').style = { alignment: { vertical: 'middle', horizontal: 'center' }, font: { size: 13, bold: true }}
         
         // Subtitle
-        worksheet.mergeCells('A10:H10')
+        worksheet.mergeCells('A10:G10')
         worksheet.getCell('A10:H10').value = `Academic Year: 2022-2023`
         worksheet.getCell('A10:H10').style = { alignment: { vertical: 'middle', horizontal: 'center' }, font: { size: 13 }}
 
@@ -418,19 +418,25 @@ exports.academyClass = async (req, res) => {
         worksheet.getCell('D11').style = { alignment: { vertical: 'middle', horizontal: 'right' }}
         worksheet.getCell('E11').value = `${academy.schedule || 'N/A'}`
 
-        worksheet.getCell('G11').value = `Date:`
-        worksheet.getCell('G11').style = { alignment: { vertical: 'middle', horizontal: 'right' }}
-        worksheet.getCell('H11').value = new Date()
+        worksheet.getCell('F11').value = `Date:`
+        worksheet.getCell('F11').style = { alignment: { vertical: 'middle', horizontal: 'right' }}
+        worksheet.getCell('G11').value = new Date()
         
         // Header
         worksheet.columns = [
-            { 
-                key: 'no', 
-                width: 5,  
-            },
+            // { 
+            //     key: 'no', 
+            //     width: 5,  
+            // },
             { 
                 key: 'rank', 
                 width: 7,
+                style: {
+                    alignment: {
+                        vertical:'middle',
+                        horizontal:'center'
+                    }
+                }
             },
             { 
                 key: 'id', 
@@ -477,7 +483,7 @@ exports.academyClass = async (req, res) => {
                     horizontal:'left'
                 }
             }
-            if (cell._column._key === 'no') {
+            if (['rank'].includes(cell._column._key)) {
                 cell.alignment = { wrapText: true, vertical: 'middle', horizontal: 'right' }
             }
         })
