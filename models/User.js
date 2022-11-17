@@ -38,10 +38,6 @@ const schema = mongoose.Schema(
             type: String,
             default: 'User'
         },
-        privilege: {
-            type: Object,
-            required: [true, 'Privilege is required!']
-        },
         role: {
             type: mongoose.Schema.ObjectId,
             ref: 'Role',
