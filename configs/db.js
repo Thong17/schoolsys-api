@@ -25,8 +25,8 @@ mongoose.connect(process.env.DATABASE_URL, {
     })
 
     const role = await Role.create({ name: { English: 'Super Admin' }, privilege: superAdmin, isDefault: true })
-    await Role.create({ _id: new ObjectId('88a28069b8f93e95a08367b8'), name: { English: 'Teacher' }, privilege: preRole, isDefault: true })
-    await Role.create({ _id: new ObjectId('a7668e2a9ed48842855643cf'), name: { English: 'Student' }, privilege: preRole, isDefault: true })
+    await Role.create({ _id: new ObjectId('88a28069b8f93e95a08367b8'), name: { English: 'Teacher' }, privilege: preRole })
+    await Role.create({ _id: new ObjectId('a7668e2a9ed48842855643cf'), name: { English: 'Student' }, privilege: preRole })
     await User.create({
         username,
         password: `${username}${process.env.DEFAULT_PASSWORD}`,

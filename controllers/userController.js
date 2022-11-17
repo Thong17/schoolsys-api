@@ -6,6 +6,7 @@ const { extractJoiErrors, readExcel, encryptPassword, comparePassword } = requir
 const { createUserValidation, updateUserValidation } = require('../middleware/validations/userValidation')
 const Student = require('../models/Student')
 const Teacher = require('../models/Teacher')
+const Role = require('../models/Role')
 
 exports.index = (req, res) => {
     const limit = parseInt(req.query.limit) || 10
@@ -78,12 +79,18 @@ exports.detail = (req, res) => {
     })
 }
 
-exports.create = (req, res) => {
+exports.create = async (req, res) => {
     const body = req.body
     const { error } = createUserValidation.validate(body, { abortEarly: false })
     if (error) return response.failure(422, extractJoiErrors(error), res)
 
     try {
+        const { privilege, role } = body
+
+        const selectRole = await Role.findById(role)
+        if (!selectRole.isDefault) await Role.findByIdAndUpdate(role, { privilege })
+        delete body.privilege
+
         User.create({...body, createdBy: req.user.id}, (err, user) => {
             if (err) {
                 switch (err.code) {
@@ -134,6 +141,12 @@ exports.update = async (req, res) => {
         } else {
             delete body.password
         }
+        const { privilege, role } = body
+        
+        const selectRole = await Role.findById(role)
+        if (!selectRole.isDefault) await Role.findByIdAndUpdate(role, { privilege })
+        delete body.privilege
+
         User.findByIdAndUpdate(id, body, (err, user) => {
             if (err) {
                 return response.failure(422, { msg: err.message }, res, err)
