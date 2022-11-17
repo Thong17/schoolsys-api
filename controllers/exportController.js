@@ -381,54 +381,46 @@ exports.academyClass = async (req, res) => {
 
         const workbook = new Workbook()
         const worksheet = workbook.addWorksheet(academy.name['English'], worksheetOption)
-        worksheet.spliceRows(1, 1, ...new Array(8))
+
+        worksheet.spliceRows(1, 1, ...new Array(12))
 
         worksheet.properties.defaultRowHeight = 15
         worksheet.properties.outlineLevelCol = 2
 
         // Logo
-        const logo = workbook.addImage({ filename: 'uploads/logo.jpg', extension:'png' })
-        worksheet.mergeCells('B1:B3')
+        const logo = workbook.addImage({ filename: 'uploads/logo.png', extension:'png' })
+        const headerText = workbook.addImage({ filename: 'uploads/header.png', extension:'png' })
         worksheet.addImage(logo, {
-            tl: { col: 1.1, row: 0.1 },
-            ext: { width: 50, height: 50 }
+            tl: { col: 0.35, row: 1.3 },
+            ext: { width: 170, height: 90 }
+        })
+        worksheet.addImage(headerText, {
+            tl: { col: 6.6, row: 1.3 },
+            ext: { width: 270, height: 90 }
         })
 
         // Title
-        worksheet.mergeCells('G1:H3')
-        worksheet.getCell('G1:H3').value = 'Student Academy Report'.toUpperCase()
-        worksheet.getCell('G1:H3').style = { alignment: { vertical: 'middle', horizontal: 'right' }, font: { size: 13, bold: true } }
+        worksheet.mergeCells('A9:H9')
+        worksheet.getCell('A9:H9').value = 'Student Academy Report'.toUpperCase()
+        worksheet.getCell('A9:H9').style = { alignment: { vertical: 'middle', horizontal: 'center' }, font: { size: 13, bold: true }}
         
         // Subtitle
-        worksheet.getCell('B5').value = `Class`
-        worksheet.getCell('B5').style = { alignment: { horizontal: 'left' } }
-        worksheet.getCell('C5').value = `${academy.name['English'] || 'N/A'}`
-        worksheet.getCell('C5').style = { alignment: { horizontal: 'right' } }
+        worksheet.mergeCells('A10:H10')
+        worksheet.getCell('A10:H10').value = `Academic Year: 2022-2023`
+        worksheet.getCell('A10:H10').style = { alignment: { vertical: 'middle', horizontal: 'center' }, font: { size: 13 }}
 
-        worksheet.getCell('B6').value = 'Grade'
-        worksheet.getCell('B6').style = { alignment: { horizontal: 'left' } }
-        worksheet.getCell('C6').value = `${academy.grade['English'] || 'N/A'}`
-        worksheet.getCell('C6').style = { alignment: { horizontal: 'right' } }
+        worksheet.getCell('B11').value = `Class:`
+        worksheet.getCell('B11').style = { alignment: { vertical: 'middle', horizontal: 'right' }}
+        worksheet.getCell('C11').value = `${academy.name['English']}`
 
-        worksheet.getCell('B7').value = 'Level'
-        worksheet.getCell('B7').style = { alignment: { horizontal: 'left' } }
-        worksheet.getCell('C7').value = `${academy.level || 'N/A'}`
-        worksheet.getCell('C7').style = { alignment: { horizontal: 'right' } }
 
-        worksheet.getCell('G5').value = `Room`
-        worksheet.getCell('G5').style = { alignment: { horizontal: 'left' } }
-        worksheet.getCell('H5').value = `${academy.room || 'N/A'}`
-        worksheet.getCell('H5').style = { alignment: { horizontal: 'right' } }
+        worksheet.getCell('D11').value = `Shift:`
+        worksheet.getCell('D11').style = { alignment: { vertical: 'middle', horizontal: 'right' }}
+        worksheet.getCell('E11').value = `${academy.schedule || 'N/A'}`
 
-        worksheet.getCell('G6').value = `Started At`
-        worksheet.getCell('G6').style = { alignment: { horizontal: 'left' } }
-        worksheet.getCell('H6').value = new Date(academy.startedAt) || 'N/A'
-        worksheet.getCell('H6').style = { alignment: { horizontal: 'right' } }
-
-        worksheet.getCell('G7').value = `Schedule`
-        worksheet.getCell('G7').style = { alignment: { horizontal: 'left' } }
-        worksheet.getCell('H7').value = `${academy.schedule || 'N/A'}`
-        worksheet.getCell('H7').style = { alignment: { horizontal: 'right' } }
+        worksheet.getCell('G11').value = `Date:`
+        worksheet.getCell('G11').style = { alignment: { vertical: 'middle', horizontal: 'right' }}
+        worksheet.getCell('H11').value = new Date()
         
         // Header
         worksheet.columns = [
@@ -491,7 +483,7 @@ exports.academyClass = async (req, res) => {
         })
 
         // Freeze row
-        worksheet.views = [{ state: 'frozen', ySplit: 9 }]
+        worksheet.views = [{ state: 'frozen', ySplit: 13 }]
 
         // Body
         academy.students.sort((a, b) => a.score > b.score ? -1 : 1).forEach((student, index) => {
