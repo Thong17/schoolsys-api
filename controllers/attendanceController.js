@@ -16,6 +16,53 @@ exports.index = (req, res) => {
     })
 }
 
+exports.report = async (req, res) => {
+    try {
+        const classId = req.params.classId
+        const { fromDate, toDate } = req.query
+        const _class = await Class.findById(classId).populate({ path: 'students', populate: { path: 'profile' } })
+
+        let query = {}
+        if (fromDate && toDate) query = { createdAt: { $gte: fromDate < _class.startedAt ? _class.startedAt : fromDate, $lt: toDate } }
+
+        const data = []
+        for (const index in _class.students) {
+            if (Object.hasOwnProperty.call(_class.students, index)) {
+                const student = _class.students[index];
+                let totalAttendance = 0
+                let totalAbsent = 0
+                let totalPermission = 0
+
+                const attendances = await Attendance.find({ class: classId, user: student.authenticate, ...query })
+                attendances.forEach((attendance) => {
+                    switch (attendance.permissionType) {
+                        case 'Present':
+                            totalAttendance += 1
+                            break
+
+                        case 'Absent':
+                            totalAbsent += 1
+                            break
+
+                        case 'Permission':
+                            totalPermission += 1
+                            break
+                    
+                        default:
+                            break
+                    }
+                })
+
+                data.push({ ...student._doc, totalAttendance, totalAbsent, totalPermission })
+            }
+        }
+
+        return response.success(200, { data }, res)
+    } catch (err) {
+        return response.failure(422, { msg: failureMsg.trouble }, res, err)
+    }
+}
+
 exports.detail = (req, res) => {
     const userId = req.params.userId
     const { classId, type } = req.query

@@ -1,4 +1,50 @@
 exports.privilege = {
+    menu: {
+        operation: {
+            route: 'menu',
+            action: 'operation'
+        },
+        school: {
+            route: 'menu',
+            action: 'school'
+        },
+        admin: {
+            route: 'menu',
+            action: 'admin'
+        },
+        report: {
+            route: 'menu',
+            action: 'report'
+        },
+        config: {
+            route: 'menu',
+            action: 'config'
+        },
+        attendance: {
+            route: 'menu',
+            action: 'attendance'
+        },
+        academy: {
+            route: 'menu',
+            action: 'academy'
+        },
+        class: {
+            route: 'menu',
+            action: 'class'
+        },
+        grade: {
+            route: 'menu',
+            action: 'grade'
+        },
+        student: {
+            route: 'menu',
+            action: 'student'
+        },
+        teacher: {
+            route: 'menu',
+            action: 'teacher'
+        },
+    },
     user: {
         list: {
             route: 'user',

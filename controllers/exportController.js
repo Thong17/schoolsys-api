@@ -8,81 +8,104 @@ const Class = require('../models/Class')
 const { Workbook } = require('exceljs')
 const { worksheetOption } = require('../configs/excel')
 const Academy = require('../models/Academy')
-const { calculateAverageScore, calculateGraduateResult, calculateTotalScore, inputDateFormat } = require('../helpers/utils')
+const { calculateAverageScore, calculateGraduateResult, calculateTotalScore, inputDateFormat, getFullMonth } = require('../helpers/utils')
 
 exports.attendanceClass = async (req, res) => {
     try {
         const { fromDate, toDate } = req.body
+
         const id = req.params.id
-        const _class = await Class.findById(id).populate('grade')
-        const attendances = await Attendance.find({ class: id, createdAt: { $gte: fromDate, $lt: toDate } }).populate('user')
+        const _class = await Class.findById(id).populate('grade students teacher')
+
+        let query = {}
+        if (fromDate && toDate) query = { createdAt: { $gte: fromDate < _class.startedAt ? _class.startedAt : fromDate, $lt: toDate } }
 
         const workbook = new Workbook()
         const worksheet = workbook.addWorksheet(`Class ${_class.name['English']}`.toUpperCase(), worksheetOption)
         
-        worksheet.spliceRows(1, 1, ...new Array(7))
+        worksheet.spliceRows(1, 1, ...new Array(12))
 
         worksheet.properties.defaultRowHeight = 15
         worksheet.properties.outlineLevelCol = 2
 
         // Logo
-        const logo = workbook.addImage({ filename: 'uploads/logo.jpg', extension:'png' })
-        worksheet.mergeCells('B1:C3')
+        const logo = workbook.addImage({ filename: 'uploads/logo.png', extension:'png' })
+        const headerText = workbook.addImage({ filename: 'uploads/header.png', extension:'png' })
         worksheet.addImage(logo, {
-            tl: { col: 1.1, row: 0.1 },
-            ext: { width: 50, height: 50 }
+            tl: { col: 0.35, row: 1.3 },
+            ext: { width: 170, height: 90 }
+        })
+        worksheet.addImage(headerText, {
+            tl: { col: 4.1, row: 1.3 },
+            ext: { width: 270, height: 90 }
         })
 
         // Title
-        worksheet.mergeCells('D2:E3')
-        worksheet.getCell('D2:E3').value = 'Attendance Report'.toUpperCase()
-        worksheet.getCell('D2:E3').style = { alignment: { vertical: 'middle', horizontal: 'right' }, font: { size: 13, bold: true } }
+        worksheet.mergeCells('A9:H9')
+        worksheet.getCell('A9:H9').value = 'Student Attendance Report'.toUpperCase()
+        worksheet.getCell('A9:H9').style = { alignment: { vertical: 'middle', horizontal: 'center' }, font: { size: 13, bold: true }}
         
         // Subtitle
-        worksheet.mergeCells('B5:C5')
-        worksheet.getCell('B5:C5').value = `Class: ${_class.name['English']}`
+        worksheet.mergeCells('A10:H10')
+        worksheet.getCell('A10:H10').value = `Academic Year: 2022-2023`
+        worksheet.getCell('A10:H10').style = { alignment: { vertical: 'middle', horizontal: 'center' }, font: { size: 13 }}
 
-        worksheet.mergeCells('B6:C6')
-        worksheet.getCell('B6:C6').value = `Room: ${_class.room || 'N/A'}`
+        worksheet.getCell('B11').value = `Class:`
+        worksheet.getCell('B11').style = { alignment: { vertical: 'middle', horizontal: 'right' }}
+        worksheet.getCell('C11').value = `${_class.name['English']}`
 
-        worksheet.mergeCells('E5')
-        worksheet.getCell('E5').value = `Grade: ${_class.grade.name['English']}`
-        worksheet.getCell('E5').style = { alignment: { horizontal: 'right' } }
 
-        worksheet.mergeCells('E6')
-        worksheet.getCell('E6').value = `Schedule: ${_class.schedule || 'N/A'}`
-        worksheet.getCell('E6').style = { alignment: { horizontal: 'right' } }
+        worksheet.getCell('D11').value = `Shift:`
+        worksheet.getCell('D11').style = { alignment: { vertical: 'middle', horizontal: 'right' }}
+        worksheet.getCell('E11').value = `${_class.schedule || 'N/A'}`
+
+        worksheet.getCell('G11').value = `Date:`
+        worksheet.getCell('G11').style = { alignment: { vertical: 'middle', horizontal: 'right' }}
+        worksheet.getCell('H11').value = new Date()
         
         // Header
         worksheet.columns = [
             { 
-                width: 5
-            },
-            { 
                 key: 'no', 
                 width: 5,  
+                style: {
+                    alignment: {
+                        vertical:'middle',
+                        horizontal:'center'
+                    }
+                }
             },
             { 
                 key: 'id', 
-                width: 20,
+                width: 15,
             }, 
             { 
-                key: 'checkedIn', 
-                width: 25,
-                style: {
-                    numFmt: 'dd/mm/yyyy h:mm:ss AM/PM'
-                }
-            },
+                key: 'lastName', 
+                width: 15,
+            }, 
             { 
-                key: 'checkedOut', 
-                width: 25,
-                style: {
-                    numFmt: 'dd/mm/yyyy h:mm:ss'
-                }
-            }
+                key: 'firstName', 
+                width: 15,
+            }, 
+            { 
+                key: 'gender', 
+                width: 8,
+            }, 
+            { 
+                key: 'attendance', 
+                width: 11,
+            }, 
+            { 
+                key: 'absent', 
+                width: 11,
+            }, 
+            { 
+                key: 'permission', 
+                width: 11,
+            }, 
         ]
 
-        const header = worksheet.addRow({ no: 'No', id: 'ID', checkedIn: 'Checked In', checkedOut: 'Checked Out' })
+        const header = worksheet.addRow({ no: 'No', id: 'ID', lastName: 'Last Name', firstName: 'First Name', gender: 'Gender', attendance: 'Attendance', absent: 'Absent', permission: 'Permission' })
         header.height = 23
         header.eachCell((cell) => {
             cell.style = {
@@ -92,7 +115,7 @@ exports.attendanceClass = async (req, res) => {
                     size: 11,
                 },
                 fill:{
-                    fgColor: { argb: 'DDDDDD' } ,
+                    fgColor: { argb: 'F7EDA4' } ,
                     pattern: 'solid',
                     type: 'pattern' 
                 },
@@ -101,18 +124,54 @@ exports.attendanceClass = async (req, res) => {
                     horizontal:'left'
                 }
             }
-            if (cell._column._key === 'no') {
-                cell.alignment = { wrapText: true, vertical: 'middle', horizontal: 'right' }
+            if (['no', 'attendance', 'absent', 'permission'].includes(cell._column._key)) {
+                cell.alignment = { wrapText: true, vertical: 'middle', horizontal: 'center' }
             }
         })
 
         // Freeze row
-        worksheet.views = [{ state: 'frozen', ySplit: 8 }]
+        worksheet.views = [{ state: 'frozen', ySplit: 13 }]
 
         // Body
-        attendances.forEach((attendance, index) => {
-            worksheet.addRow({ no: index + 1, id: attendance.user.username, checkedIn: attendance.checkedIn, checkedOut: attendance.checkedOut })
-        })
+        for (const index in _class.students) {
+            if (Object.hasOwnProperty.call(_class.students, index)) {
+                const student = _class.students[index];
+                let totalAttendance = 0
+                let totalAbsent = 0
+                let totalPermission = 0
+
+                const attendances = await Attendance.find({ class: id, user: student.authenticate, ...query })
+                attendances.forEach((attendance) => {
+                    switch (attendance.permissionType) {
+                        case 'Present':
+                            totalAttendance += 1
+                            break
+
+                        case 'Absent':
+                            totalAbsent += 1
+                            break
+
+                        case 'Permission':
+                            totalPermission += 1
+                            break
+                    
+                        default:
+                            break
+                    }
+                })
+
+                worksheet.addRow({ 
+                    no: parseInt(index) + 1, 
+                    id: student.ref,
+                    lastName: student.lastName,
+                    firstName: student.firstName,
+                    gender: student.gender,
+                    attendance: totalAttendance,
+                    absent: totalAbsent,
+                    permission: totalPermission,
+                })
+            }
+        }
 
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
         res.setHeader('Content-Disposition', `attachment; filename=class_attendance_from_${fromDate}_to_${toDate}`)
@@ -337,7 +396,7 @@ exports.academyClass = async (req, res) => {
 
         // Title
         worksheet.mergeCells('G1:H3')
-        worksheet.getCell('G1:H3').value = 'Student Attendance Report'.toUpperCase()
+        worksheet.getCell('G1:H3').value = 'Student Academy Report'.toUpperCase()
         worksheet.getCell('G1:H3').style = { alignment: { vertical: 'middle', horizontal: 'right' }, font: { size: 13, bold: true } }
         
         // Subtitle
@@ -450,6 +509,163 @@ exports.academyClass = async (req, res) => {
 
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
         res.setHeader('Content-Disposition', `attachment; filename=class_attendance`)
+
+        const file = await workbook.xlsx.writeBuffer()
+
+        return response.success(200, { file }, res)
+    } catch (err) {
+        if (err) return response.failure(422, { msg: failureMsg.trouble }, res, err)
+    }
+}
+
+exports.educationClass = async (req, res) => {
+    try {
+        const { month } = req.body
+
+        const id = req.params.id
+        const _class = await Class.findById(id).populate({ path: 'grade', populate: { path: 'subjects' } }).populate({ path: 'students', populate: { path: 'currentAcademy', populate: { path: 'scores' } } })
+
+        const workbook = new Workbook()
+        const worksheet = workbook.addWorksheet(`Class ${_class.name['English']}`.toUpperCase(), worksheetOption)
+        
+        worksheet.spliceRows(1, 1, ...new Array(12))
+
+        worksheet.properties.defaultRowHeight = 15
+        worksheet.properties.outlineLevelCol = 2
+
+        // Logo
+        const logo = workbook.addImage({ filename: 'uploads/logo.png', extension:'png' })
+        const headerText = workbook.addImage({ filename: 'uploads/header.png', extension:'png' })
+        worksheet.addImage(logo, {
+            tl: { col: 0.35, row: 1.3 },
+            ext: { width: 170, height: 90 }
+        })
+        worksheet.addImage(headerText, {
+            tl: { col: 4.1, row: 1.3 },
+            ext: { width: 270, height: 90 }
+        })
+
+        // Title
+        worksheet.mergeCells('A9:H9')
+        worksheet.getCell('A9:H9').value = 'Student Education Report'.toUpperCase()
+        worksheet.getCell('A9:H9').style = { alignment: { vertical: 'middle', horizontal: 'center' }, font: { size: 13, bold: true }}
+        
+        // Subtitle
+        worksheet.mergeCells('A10:H10')
+        worksheet.getCell('A10:H10').value = `Academic Year: 2022-2023`
+        worksheet.getCell('A10:H10').style = { alignment: { vertical: 'middle', horizontal: 'center' }, font: { size: 13 }}
+
+        worksheet.getCell('B11').value = `Class:`
+        worksheet.getCell('B11').style = { alignment: { vertical: 'middle', horizontal: 'right' }}
+        worksheet.getCell('C11').value = `${_class.name['English']}`
+
+
+        worksheet.getCell('D11').value = `Shift:`
+        worksheet.getCell('D11').style = { alignment: { vertical: 'middle', horizontal: 'right' }}
+        worksheet.getCell('E11').value = `${_class.schedule || 'N/A'}`
+
+        worksheet.getCell('G11').value = `Month:`
+        worksheet.getCell('G11').style = { alignment: { vertical: 'middle', horizontal: 'right' }}
+        worksheet.getCell('H11').value = getFullMonth(parseInt(month))
+        
+        // Header
+        worksheet.columns = [
+            { 
+                key: 'rank', 
+                width: 5,  
+                style: {
+                    alignment: {
+                        vertical:'middle',
+                        horizontal:'center'
+                    }
+                }
+            },
+            { 
+                key: 'id', 
+                width: 15,
+            }, 
+            { 
+                key: 'lastName', 
+                width: 15,
+            }, 
+            { 
+                key: 'firstName', 
+                width: 15,
+            }, 
+            { 
+                key: 'gender', 
+                width: 8,
+            }, 
+            { 
+                key: 'score', 
+                width: 11,
+            }, 
+            { 
+                key: 'average', 
+                width: 11,
+            }, 
+            { 
+                key: 'grade', 
+                width: 11,
+            }, 
+        ]
+
+        const header = worksheet.addRow({ rank: 'Rank', id: 'ID', lastName: 'Last Name', firstName: 'First Name', gender: 'Gender', score: 'Score', average: 'Average', grade: 'Grade' })
+        header.height = 23
+        header.eachCell((cell) => {
+            cell.style = {
+                font: {
+                    bold: true,
+                    color: { argb: '000000' },
+                    size: 11,
+                },
+                fill:{
+                    fgColor: { argb: 'F7EDA4' } ,
+                    pattern: 'solid',
+                    type: 'pattern' 
+                },
+                alignment: {
+                    vertical:'middle',
+                    horizontal:'left'
+                }
+            }
+            if (['no'].includes(cell._column._key)) {
+                cell.alignment = { wrapText: true, vertical: 'middle', horizontal: 'center' }
+            }
+        })
+
+        // Freeze row
+        worksheet.views = [{ state: 'frozen', ySplit: 13 }]
+        const students = []
+
+        // Body
+        for (const index in _class.students) {
+            if (Object.hasOwnProperty.call(_class.students, index)) {
+                const student = _class.students[index];
+                const scores = student.currentAcademy?.scores?.filter(item => item.description === month)
+                const subjects = _class?.grade?.subjects
+                const calculatedAverage = calculateAverageScore(scores, subjects?.length)
+
+                students.push({ 
+                    id: student.ref,
+                    lastName: student.lastName,
+                    firstName: student.firstName,
+                    gender: student.gender,
+                    score: calculateTotalScore(scores),
+                    average: calculatedAverage,
+                    grade: calculateGraduateResult(scores, subjects),
+                })
+            }
+        }
+        students?.sort((a, b) => a.score > b.score ? -1 : 1).forEach((student, index) => {
+            worksheet.addRow({ 
+                rank: `#${index+1}`, 
+                ...student
+            })
+        })
+
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        res.setHeader('Content-Disposition', `attachment; filename=class_education_month_${month}`)
 
         const file = await workbook.xlsx.writeBuffer()
 
