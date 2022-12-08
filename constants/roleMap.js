@@ -16,6 +16,10 @@ exports.privilege = {
             route: 'menu',
             action: 'report'
         },
+        config: {
+            route: 'menu',
+            action: 'config'
+        },
         attendance: {
             route: 'menu',
             action: 'attendance'
